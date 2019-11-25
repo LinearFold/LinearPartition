@@ -53,13 +53,13 @@ Outputs base pairing probability matrix to a file with user specified name. (def
 ```
 --prefix
 ```
-Outputs base pairing probability matrices to files with user specified prefix name. (default False)
+Outputs base pairing probability matrices to files with user specified prefix. (default False)
 ```
 -p
 ```
 Partition function calculation only. (default False)
 
-## Example Run Predict
+## Example: Run Predict
 ```
 cat testseq | ./linearpartition -V --prefix testseq_output
 UGAGUUCUCGAUCUCUAAAAUCG
@@ -92,7 +92,7 @@ Outputing base pairing probability matrix to output...
 Done!
 ```
 
-## Example Run partition function calculation only
+## Example: Run Partition Function Calculation Only
 ```
 echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -p --verbose
 beam size: 100
