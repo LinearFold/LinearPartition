@@ -53,6 +53,7 @@ def main():
 
     if FLAGS.r:
         bpp_file = str(FLAGS.r)
+        if os.path.exists(bpp_file): os.remove(bpp_file)
 
     if FLAGS.c:
         if float(bpp_cutoff) < 0.0 or float(bpp_cutoff) > 1.0:

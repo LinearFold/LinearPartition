@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <stdio.h> 
 
 #include "LinearPartition.h"
 #include "Utils/utility.h"
@@ -533,6 +534,15 @@ int main(int argc, char** argv){
 
         if (seq[0] == ';' || seq[0] == '>') {
             printf("%s\n", seq.c_str());
+            if (!bpp_file.empty()) {
+                FILE *fptr = fopen(bpp_file.c_str(), "a"); 
+                if (fptr == NULL) { 
+                    printf("Could not open file!\n"); 
+                    return 0; 
+                }
+                fprintf(fptr, "%s\n", seq.c_str());
+                fclose(fptr); 
+            }
             continue;
         }
 
@@ -546,10 +556,6 @@ int main(int argc, char** argv){
             bpp_file_index = bpp_prefix + to_string(seq_index);
         }
 
-        // if (seq_index > 1 && bpp_prefix.empty() && bpp_file.empty()){
-        //     printf("\nWARNING: use --prefix mode for multiple sequences\n");
-        //     return 0;
-        // }
         printf("%s\n", seq.c_str());
         
         // convert to uppercase
