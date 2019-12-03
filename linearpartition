@@ -4,6 +4,9 @@ import gflags as flags
 import subprocess
 import sys
 import os
+from termios import tcflush, TCIFLUSH
+import termios
+import time
 
 FLAGS = flags.FLAGS
 
@@ -13,6 +16,7 @@ def setgflags():
     flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
     flags.DEFINE_boolean('verbose', False, "print out beamsize, Log Partition Coefficient (default mode) or free energy of ensumble (-V mode) and runtime information, (DEFAULT=FALSE)")
     flags.DEFINE_string('o', '', "output base pairing probability matrix to a file with user specified name (DEFAULT=FALSE)") # output mode
+    flags.DEFINE_string('r', '', "output base pairing probability matrix to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
     flags.DEFINE_string('prefix', '', "output base pairing probability matrices to files with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
     flags.DEFINE_boolean('p', False, "only do partition function calculation (DEFAULT=FALSE)") # adding partition function mode
     flags.DEFINE_float('c', None, "only output base pair probability bigger than user specified threshold between 0 and 1 (DEFAULT=0.0)") # bpp cutoff
@@ -31,16 +35,24 @@ def main():
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
 
-    if FLAGS.o and FLAGS.prefix:
-        print("WARNING: choose either -o mode or --prefix mode!\n");
+    if FLAGS.o and FLAGS.r:
+        print("WARNING: choose either -o mode or -r mode!\n");
+        print("Exit!\n");
+        exit();
+
+    if (FLAGS.o or FLAGS.r) and FLAGS.prefix:
+        print("WARNING: choose either -o/-r mode or --prefix mode!\n");
         print("Exit!\n");
         exit();
 
     if FLAGS.o:
         if os.path.exists(bpp_file):
-            print("WARNING: this file name has already be taken. Choose another name.\n");
+            print("WARNING: this file name has already be taken. Choose another name or use -r mode.\n");
             print("Exit!\n");
             exit();
+
+    if FLAGS.r:
+        bpp_file = str(FLAGS.r)
 
     if FLAGS.c:
         if float(bpp_cutoff) < 0.0 or float(bpp_cutoff) > 1.0:
