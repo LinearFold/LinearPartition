@@ -475,13 +475,15 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              bool verbose,
                              string bppfile,
                              string bppfileindex,
-                             bool pfonly)
+                             bool pfonly,
+                             float bppcutoff)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
       bpp_file(bppfile),
       bpp_file_index(bppfileindex),
-      pf_only(pfonly) {
+      pf_only(pfonly),
+      bpp_cutoff(bppcutoff) {
 #ifdef lpv
         initialize();
 #else
@@ -503,6 +505,7 @@ int main(int argc, char** argv){
     string bpp_file;
     string bpp_prefix;
     bool pf_only = false;
+    float bpp_cutoff = 0.0;
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -511,6 +514,7 @@ int main(int argc, char** argv){
         bpp_file = argv[4];
         bpp_prefix = argv[5];
         pf_only = atoi(argv[6]) == 1;
+        bpp_cutoff = atof(argv[7]);
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -555,7 +559,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff);
 
         BeamCKYParser::DecoderResult result = parser.parse(seq);
     }

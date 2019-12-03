@@ -83,6 +83,7 @@ public:
     string bpp_file;
     string bpp_file_index;
     bool pf_only;
+    float bpp_cutoff;
 
     struct DecoderResult {
         float alpha;
@@ -95,7 +96,8 @@ public:
                   bool is_verbose=false,
                   string bppfile="",
                   string bppfileindex="",
-                  bool pf_only=false);
+                  bool pf_only=false,
+                  float bpp_cutoff=0.0);
 
     DecoderResult parse(string& seq);
 

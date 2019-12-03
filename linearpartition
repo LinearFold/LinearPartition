@@ -12,9 +12,10 @@ def setgflags():
     flags.DEFINE_boolean('V', False, "use vienna parameters, (DEFAULT=FALSE)")
     flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
     flags.DEFINE_boolean('verbose', False, "print out beamsize, Log Partition Coefficient (default mode) or free energy of ensumble (-V mode) and runtime information, (DEFAULT=FALSE)")
-    flags.DEFINE_string('o', '', "output base pairing probability matrix to a file with user specified name, (DEFAULT=FALSE)") # output mode
+    flags.DEFINE_string('o', '', "output base pairing probability matrix to a file with user specified name (DEFAULT=FALSE)") # output mode
     flags.DEFINE_string('prefix', '', "output base pairing probability matrices to files with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
-    flags.DEFINE_boolean('p', False, "only do partition function calculation, (DEFAULT=FALSE)") # adding partition function mode
+    flags.DEFINE_boolean('p', False, "only do partition function calculation (DEFAULT=FALSE)") # adding partition function mode
+    flags.DEFINE_float('c', None, "only output base pair probability bigger than user specified threshold between 0 and 1 (DEFAULT=0.0)") # bpp cutoff
     argv = FLAGS(sys.argv)
 
 def main():
@@ -25,6 +26,7 @@ def main():
     bpp_file = str(FLAGS.o)
     bpp_prefix = str(FLAGS.prefix) + "_" if FLAGS.prefix else ''
     pf_only = '1' if FLAGS.p else '0'
+    bpp_cutoff = str(FLAGS.c)
 
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
@@ -40,8 +42,14 @@ def main():
             print("Exit!\n");
             exit();
 
+    if FLAGS.c:
+        if float(bpp_cutoff) < 0.0 or float(bpp_cutoff) > 1.0:
+            print("WARNING: base pair probability cutoff should be between 0.0 and 1.0\n");
+            print("Exit!\n");
+            exit();
+
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':
