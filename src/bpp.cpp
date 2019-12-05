@@ -1,9 +1,9 @@
 /*
- *outside.cpp*
+ *bpp.cpp*
  The main code for base pair probability calculation.
 
  author: He Zhang
- edited by: 04/2019
+ created by: 04/2019
 */
 
 #include <stdio.h> 
