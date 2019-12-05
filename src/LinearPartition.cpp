@@ -453,7 +453,7 @@ BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
     // unsigned long nos_tot = nos_H + nos_P + nos_M2 + nos_Multi + nos_M + nos_C;
 
 #ifdef lpv
-    printf("Free Energy of Ensumble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
+    printf("Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
 #else
     printf("Log Partition Coefficient: %.5f\n", viterbi.alpha);
 #endif
