@@ -4,9 +4,6 @@ import gflags as flags
 import subprocess
 import sys
 import os
-from termios import tcflush, TCIFLUSH
-import termios
-import time
 
 FLAGS = flags.FLAGS
 
