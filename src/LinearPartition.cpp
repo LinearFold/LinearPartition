@@ -460,12 +460,12 @@ BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
 
     if(is_verbose) printf("Partition Function Calculation Time: %f seconds.\n", parse_elapsed_time);
 
+    fflush(stdout);
+
     if(!pf_only){
         outside(next_pair);
         cal_PairProb(viterbi);
     }
-
-    fflush(stdout);
 
     // return {viterbi.alpha, nos_tot, parse_elapsed_time};
     return {viterbi.alpha, parse_elapsed_time};
