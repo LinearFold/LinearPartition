@@ -8,13 +8,13 @@ import os
 FLAGS = flags.FLAGS
 
 def setgflags():
-    flags.DEFINE_integer('b', 100, "set beam size, (DEFAULT=100)")
+    flags.DEFINE_integer('beam', 100, "set beam size, (DEFAULT=100)", short_name='b')
     flags.DEFINE_boolean('V', False, "use vienna parameters, (DEFAULT=FALSE)")
     flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
     flags.DEFINE_boolean('verbose', False, "print out beamsize, Log Partition Coefficient (default mode) or free energy of ensumble (-V mode) and runtime information, (DEFAULT=FALSE)")
-    flags.DEFINE_string('o', '', "output base pairing probability matrix to a file with user specified name, (DEFAULT=FALSE)") # output mode
+    flags.DEFINE_string('output', '', "output base pairing probability matrix to a file with user specified name, (DEFAULT=FALSE)", short_name="o") # output mode
     flags.DEFINE_string('prefix', '', "output base pairing probability matrices to files with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
-    flags.DEFINE_boolean('p', False, "only do partition function calculation, (DEFAULT=FALSE)") # adding partition function mode
+    flags.DEFINE_boolean('part', False, "only do partition function calculation, (DEFAULT=FALSE)", short_name='p') # adding partition function mode
     argv = FLAGS(sys.argv)
 
 def main():
