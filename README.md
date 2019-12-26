@@ -41,7 +41,7 @@ Switches LinearPartition-C (by default) to LinearPartition-V.
 ```
 --verbose
 ```
-Prints out beamsize, Log Partition Coefficient or free energy of ensumble (-V mode) and runtime information. (default False)
+Prints out beamsize, Log Partition Coefficient or free energy of ensemble (-V mode) and runtime information. (default False)
 ```
 --sharpturn
 ```
@@ -63,23 +63,23 @@ Partition function calculation only. (default False)
 ```
 cat testseq | ./linearpartition -V --prefix testseq_output
 UGAGUUCUCGAUCUCUAAAAUCG
-Free Energy of Ensumble: -1.96 kcal/mol
+Free Energy of Ensemble: -1.96 kcal/mol
 Outputing base pairing probability matrix to testseq_output_1...
 Done!
 AAAACGGUCCUUAUCAGGACCAAACA
-Free Energy of Ensumble: -9.41 kcal/mol
+Free Energy of Ensemble: -9.41 kcal/mol
 Outputing base pairing probability matrix to testseq_output_2...
 Done!
 AUUCUUGCUUCAACAGUGUUUGAACGGAAU
-Free Energy of Ensumble: -7.72 kcal/mol
+Free Energy of Ensemble: -7.72 kcal/mol
 Outputing base pairing probability matrix to testseq_output_3...
 Done!
 UCGGCCACAAACACACAAUCUACUGUUGGUCGA
-Free Energy of Ensumble: -9.09 kcal/mol
+Free Energy of Ensemble: -9.09 kcal/mol
 Outputing base pairing probability matrix to testseq_output_4...
 Done!
 GUUUUUAUCUUACACACGCUUGUGUAAGAUAGUUA
-Free Energy of Ensumble: -13.58 kcal/mol
+Free Energy of Ensemble: -13.58 kcal/mol
 Outputing base pairing probability matrix to testseq_output_5...
 Done!
 
@@ -97,6 +97,6 @@ Done!
 echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -p --verbose
 beam size: 100
 GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
-Free Energy of Ensumble: -32.14 kcal/mol
+Free Energy of Ensemble: -32.14 kcal/mol
 Partition Function Calculation Time: 0.005509 seconds.
 ```

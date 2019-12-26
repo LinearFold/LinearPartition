@@ -1,9 +1,9 @@
 /*
- *outside.cpp*
+ *bpp.cpp*
  The main code for base pair probability calculation.
 
  author: He Zhang
- edited by: 04/2019
+ created by: 04/2019
 */
 
 #include <stdio.h> 
@@ -50,6 +50,7 @@ void BeamCKYParser::cal_PairProb(State& viterbi) {
             if (temp_prob_inside > float(-9.91152)) {
                 float prob = Fast_Exp(temp_prob_inside);
                 if(prob > 1.0) prob = 1.0;
+                if(prob < bpp_cutoff) continue;
                 Pij[make_pair(i+1, j+1)] = prob;
             }
         }

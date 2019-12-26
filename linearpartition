@@ -15,6 +15,8 @@ def setgflags():
     flags.DEFINE_string('output', '', "output base pairing probability matrix to a file with user specified name, (DEFAULT=FALSE)", short_name="o") # output mode
     flags.DEFINE_string('prefix', '', "output base pairing probability matrices to files with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
     flags.DEFINE_boolean('part', False, "only do partition function calculation, (DEFAULT=FALSE)", short_name='p') # adding partition function mode
+    flags.DEFINE_string('r', '', "output base pairing probability matrix to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
+    flags.DEFINE_float('c', None, "only output base pair probability bigger than user specified threshold between 0 and 1 (DEFAULT=0.0)") # bpp cutoff
     argv = FLAGS(sys.argv)
 
 def main():
@@ -25,23 +27,39 @@ def main():
     bpp_file = str(FLAGS.o)
     bpp_prefix = str(FLAGS.prefix) + "_" if FLAGS.prefix else ''
     pf_only = '1' if FLAGS.p else '0'
+    bpp_cutoff = str(FLAGS.c)
 
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
 
-    if FLAGS.o and FLAGS.prefix:
-        print("WARNING: choose either -o mode or --prefix mode!\n");
+    if FLAGS.o and FLAGS.r:
+        print("WARNING: choose either -o mode or -r mode!\n");
+        print("Exit!\n");
+        exit();
+
+    if (FLAGS.o or FLAGS.r) and FLAGS.prefix:
+        print("WARNING: choose either -o/-r mode or --prefix mode!\n");
         print("Exit!\n");
         exit();
 
     if FLAGS.o:
         if os.path.exists(bpp_file):
-            print("WARNING: this file name has already be taken. Choose another name.\n");
+            print("WARNING: this file name has already be taken. Choose another name or use -r mode.\n");
+            print("Exit!\n");
+            exit();
+
+    if FLAGS.r:
+        bpp_file = str(FLAGS.r)
+        if os.path.exists(bpp_file): os.remove(bpp_file)
+
+    if FLAGS.c:
+        if float(bpp_cutoff) < 0.0 or float(bpp_cutoff) > 1.0:
+            print("WARNING: base pair probability cutoff should be between 0.0 and 1.0\n");
             print("Exit!\n");
             exit();
 
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':

@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <stdio.h> 
 
 #include "LinearPartition.h"
 #include "Utils/utility.h"
@@ -75,21 +76,30 @@ float BeamCKYParser::beam_prune(std::unordered_map<int, State> &beamstep) {
 void BeamCKYParser::prepare(unsigned len) {
     seq_length = len;
 
-    bestH.clear();
-    bestH.resize(seq_length);
-    bestP.clear();
-    bestP.resize(seq_length);
-    bestM2.clear();
-    bestM2.resize(seq_length);
-    bestM.clear();
-    bestM.resize(seq_length);
-    bestC.clear();
-    bestC.resize(seq_length);
-    bestMulti.clear();
-    bestMulti.resize(seq_length);
+    // bestH.clear();
+    // bestH.resize(seq_length);
+    // bestP.clear();
+    // bestP.resize(seq_length);
+    // bestM2.clear();
+    // bestM2.resize(seq_length);
+    // bestM.clear();
+    // bestM.resize(seq_length);
+    // bestC.clear();
+    // bestC.resize(seq_length);
+    // bestMulti.clear();
+    // bestMulti.resize(seq_length);
 
-    nucs.clear();
-    nucs.resize(seq_length);
+    // nucs.clear();
+    // nucs.resize(seq_length);
+
+    nucs = new int[seq_length];
+    bestC = new State[seq_length];
+    bestH = new unordered_map<int, State>[seq_length];
+    bestP = new unordered_map<int, State>[seq_length];
+    bestM = new unordered_map<int, State>[seq_length];
+    bestM2 = new unordered_map<int, State>[seq_length];
+    bestMulti = new unordered_map<int, State>[seq_length];
+    
     scores.reserve(seq_length);
 }
 
@@ -452,19 +462,19 @@ BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
     // unsigned long nos_tot = nos_H + nos_P + nos_M2 + nos_Multi + nos_M + nos_C;
 
 #ifdef lpv
-    printf("Free Energy of Ensumble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
+    printf("Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
 #else
     printf("Log Partition Coefficient: %.5f\n", viterbi.alpha);
 #endif
 
     if(is_verbose) printf("Partition Function Calculation Time: %f seconds.\n", parse_elapsed_time);
 
+    fflush(stdout);
+
     if(!pf_only){
         outside(next_pair);
         cal_PairProb(viterbi);
     }
-
-    fflush(stdout);
 
     // return {viterbi.alpha, nos_tot, parse_elapsed_time};
     return {viterbi.alpha, parse_elapsed_time};
@@ -475,13 +485,15 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              bool verbose,
                              string bppfile,
                              string bppfileindex,
-                             bool pfonly)
+                             bool pfonly,
+                             float bppcutoff)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
       bpp_file(bppfile),
       bpp_file_index(bppfileindex),
-      pf_only(pfonly) {
+      pf_only(pfonly),
+      bpp_cutoff(bppcutoff) {
 #ifdef lpv
         initialize();
 #else
@@ -503,6 +515,7 @@ int main(int argc, char** argv){
     string bpp_file;
     string bpp_prefix;
     bool pf_only = false;
+    float bpp_cutoff = 0.0;
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -511,6 +524,7 @@ int main(int argc, char** argv){
         bpp_file = argv[4];
         bpp_prefix = argv[5];
         pf_only = atoi(argv[6]) == 1;
+        bpp_cutoff = atof(argv[7]);
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -529,6 +543,15 @@ int main(int argc, char** argv){
 
         if (seq[0] == ';' || seq[0] == '>') {
             printf("%s\n", seq.c_str());
+            if (!bpp_file.empty()) {
+                FILE *fptr = fopen(bpp_file.c_str(), "a"); 
+                if (fptr == NULL) { 
+                    printf("Could not open file!\n"); 
+                    return 0; 
+                }
+                fprintf(fptr, "%s\n", seq.c_str());
+                fclose(fptr); 
+            }
             continue;
         }
 
@@ -542,10 +565,6 @@ int main(int argc, char** argv){
             bpp_file_index = bpp_prefix + to_string(seq_index);
         }
 
-        // if (seq_index > 1 && bpp_prefix.empty() && bpp_file.empty()){
-        //     printf("\nWARNING: use --prefix mode for multiple sequences\n");
-        //     return 0;
-        // }
         printf("%s\n", seq.c_str());
         
         // convert to uppercase
@@ -555,7 +574,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff);
 
         BeamCKYParser::DecoderResult result = parser.parse(seq);
     }
