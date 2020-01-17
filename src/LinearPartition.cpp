@@ -103,8 +103,22 @@ void BeamCKYParser::prepare(unsigned len) {
     scores.reserve(seq_length);
 }
 
+void BeamCKYParser::postprocess() {
 
-BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
+    delete[] bestC;  
+    delete[] bestH;  
+    delete[] bestP;  
+    delete[] bestM;  
+    delete[] bestM2;  
+    delete[] bestMulti;  
+
+    delete[] nucs;  
+  
+}
+
+
+// BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
+void BeamCKYParser::parse(string& seq) {
       
     struct timeval parse_starttime, parse_endtime;
 
@@ -467,7 +481,7 @@ BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
     printf("Log Partition Coefficient: %.5f\n", viterbi.alpha);
 #endif
 
-    if(is_verbose) printf("Partition Function Calculation Time: %f seconds.\n", parse_elapsed_time);
+    if(is_verbose) printf("Partition Function Calculation Time: %.2f seconds.\n", parse_elapsed_time);
 
     fflush(stdout);
 
@@ -476,8 +490,11 @@ BeamCKYParser::DecoderResult BeamCKYParser::parse(string& seq) {
         cal_PairProb(viterbi);
     }
 
+    postprocess();
+
     // return {viterbi.alpha, nos_tot, parse_elapsed_time};
-    return {viterbi.alpha, parse_elapsed_time};
+    // return {viterbi.alpha, parse_elapsed_time};
+    return;
 }
 
 BeamCKYParser::BeamCKYParser(int beam_size,
@@ -576,7 +593,8 @@ int main(int argc, char** argv){
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
         BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff);
 
-        BeamCKYParser::DecoderResult result = parser.parse(seq);
+        // BeamCKYParser::DecoderResult result = parser.parse(seq);
+        parser.parse(seq);
     }
 
     gettimeofday(&total_endtime, NULL);

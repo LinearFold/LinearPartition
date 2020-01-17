@@ -38,23 +38,6 @@ using namespace std;
   #define VALUE_MIN numeric_limits<double>::lowest()
 #endif
 
-enum Manner {
-  MANNER_NONE = 0,              // 0: empty
-  MANNER_H,                     // 1: hairpin candidate
-  MANNER_HAIRPIN,               // 2: hairpin
-  MANNER_SINGLE,                // 3: single
-  MANNER_HELIX,                 // 4: helix
-  MANNER_MULTI,                 // 5: multi = ..M2. [30 restriction on the left and jump on the right]
-  MANNER_MULTI_eq_MULTI_plus_U, // 6: multi = multi + U
-  MANNER_P_eq_MULTI,            // 7: P = (multi)
-  MANNER_M2_eq_M_plus_P,        // 8: M2 = M + P
-  MANNER_M_eq_M2,               // 9: M = M2
-  MANNER_M_eq_M_plus_U,         // 10: M = M + U
-  MANNER_M_eq_P,                // 11: M = P
-  MANNER_C_eq_C_plus_U,         // 12: C = C + U
-  MANNER_C_eq_C_plus_P,         // 13: C = C + P
-};
-
 // A hash function used to hash a pair of any kind 
 struct hash_pair { 
     template <class T1, class T2> 
@@ -85,11 +68,11 @@ public:
     bool pf_only;
     float bpp_cutoff;
 
-    struct DecoderResult {
-        float alpha;
-        // unsigned long num_states;
-        double time;
-    };
+    // struct DecoderResult {
+    //     float alpha;
+    //     // unsigned long num_states;
+    //     double time;
+    // };
 
     BeamCKYParser(int beam_size=100,
                   bool nosharpturn=true,
@@ -99,7 +82,8 @@ public:
                   bool pf_only=false,
                   float bpp_cutoff=0.0);
 
-    DecoderResult parse(string& seq);
+    // DecoderResult parse(string& seq);
+    void parse(string& seq);
 
 private:
     void get_parentheses(char* result, string& seq);
@@ -117,7 +101,7 @@ private:
     int *nucs;
 
     void prepare(unsigned len);
-
+    void postprocess();
 
     void cal_PairProb(State& viterbi); 
 
