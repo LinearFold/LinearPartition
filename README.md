@@ -47,11 +47,11 @@ Prints out beamsize, Log Partition Coefficient or free energy of ensemble (-V mo
 ```
 Enable sharpturn. (default False)
 ```
--o
+-o FILE_NAME
 ```
 Outputs base pairing probability matrix to a file with user specified name. (default False)
 ```
---prefix
+--prefix PREFIX_NAME
 ```
 Outputs base pairing probability matrices to files with user specified prefix. (default False)
 ```
