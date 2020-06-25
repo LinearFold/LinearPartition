@@ -51,6 +51,10 @@ Enable sharpturn. (default False)
 ```
 Outputs base pairing probability matrix to a file with user specified name. (default False)
 ```
+-r FILE_NAME
+```
+Output base pairing probability matrix to a file with user specified name (overwrite if the file exists). (default False)
+```
 --prefix PREFIX_NAME
 ```
 Outputs base pairing probability matrices to files with user specified prefix. (default False)
@@ -58,6 +62,10 @@ Outputs base pairing probability matrices to files with user specified prefix. (
 -p
 ```
 Partition function calculation only. (default False)
+```
+-c THRESHOLD
+```
+Only output base pair probability larger than user specified threshold between 0 and 1. (DEFAULT=0.0)
 
 ## Example: Run Predict
 ```
