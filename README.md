@@ -8,6 +8,8 @@ He Zhang, Liang Zhang, David Mathews, Liang Huang*
 
 \* corresponding author
 
+Web server: http://linearfold.org/partition
+
 
 ## Dependencies
 gcc 4.8.5 or above; 
