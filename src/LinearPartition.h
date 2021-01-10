@@ -67,7 +67,10 @@ public:
     string bpp_file_index;
     bool pf_only;
     float bpp_cutoff;
-  string forest_file;
+    string forest_file;
+    bool mea_;
+    float gamma;
+    string MEA_file;
 
     // struct DecoderResult {
     //     float alpha;
@@ -82,7 +85,10 @@ public:
                   string bppfileindex="",
                   bool pf_only=false,
                   float bpp_cutoff=0.0,
-		  string forestfile="");
+		          string forestfile="",
+                  bool mea_=false,
+                  float gamma=3.0,
+                  string MEAfile="");
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);
@@ -106,6 +112,10 @@ private:
     void postprocess();
 
     void cal_PairProb(State& viterbi); 
+
+    pair<float,string> PairProb_MEA();
+
+    string back_trace(const int i, const int j, const vector<vector<int> >& back_pointer);
 
     void outside(vector<int> next_pair[]);
 

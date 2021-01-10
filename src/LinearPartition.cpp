@@ -494,7 +494,43 @@ void BeamCKYParser::parse(string& seq) {
 	if (!forest_file.empty())
 	  dump_forest(seq, false); // inside-outside forest
         cal_PairProb(viterbi);
+
+        if (mea_){
+
+            clock_t t = clock();
+
+            auto MEA_result = PairProb_MEA();
+            
+
+            if (MEA_file == ""){
+                // cout<<"time: "<<((float)(clock()-t))/CLOCKS_PER_SEC<<endl;
+
+                printf("%s\n", MEA_result.second.c_str());
+
+            }
+
+            else{
+                FILE *fptr = fopen(MEA_file.c_str(), "w");
+
+                if (fptr == NULL) { 
+                    printf("Could not open MEA output file!\n"); 
+                    return;
+                } 
+                else{
+                    fprintf(fptr, "%s\n%s\nMEA score: %.2f\n", seq.c_str(), MEA_result.second.c_str(), MEA_result.first);
+                    fclose(fptr);
+
+                }
+            }
+
+        }
+
+
     }
+
+
+
+
 
     postprocess();
 
@@ -544,7 +580,10 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              string bppfileindex,
                              bool pfonly,
                              float bppcutoff,
-			     string forestfile)
+			                 string forestfile,
+                             bool mea,
+                             float MEA_gamma,
+                             string MEAfile)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
@@ -552,7 +591,10 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       bpp_file_index(bppfileindex),
       pf_only(pfonly),
       bpp_cutoff(bppcutoff),
-      forest_file(forestfile) {
+      forest_file(forestfile), 
+      mea_(mea),
+      gamma(MEA_gamma),
+      MEA_file(MEAfile) {
 #ifdef lpv
         initialize();
 #else
@@ -577,6 +619,11 @@ int main(int argc, char** argv){
     float bpp_cutoff = 0.0;
     string forest_file;
 
+    float MEA_gamma = 3.0;
+    bool mea = false;
+    string MEA_path;
+
+
     if (argc > 1) {
         beamsize = atoi(argv[1]);
         sharpturn = atoi(argv[2]) == 1;
@@ -585,7 +632,10 @@ int main(int argc, char** argv){
         bpp_prefix = argv[5];
         pf_only = atoi(argv[6]) == 1;
         bpp_cutoff = atof(argv[7]);
-	forest_file = argv[8];
+    	forest_file = argv[8];
+        mea = atoi(argv[9]) == 1;
+        MEA_gamma = atof(argv[10]);
+        MEA_path = argv[11];
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -635,7 +685,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_path);
 
         // BeamCKYParser::DecoderResult result = parser.parse(seq);
         parser.parse(seq);

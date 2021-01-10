@@ -70,6 +70,175 @@ void BeamCKYParser::cal_PairProb(State& viterbi) {
     return;
 }
 
+
+
+
+string BeamCKYParser::back_trace(const int i, const int j, const vector<vector<int> >& back_pointer){
+    // cout<<"line 74 "<<i<<' '<<j<<endl;
+
+    if (i>j){
+        return "";
+    }
+
+    if (back_pointer[i][j] == -1){
+        if (i == j){
+            return ".";
+        }
+
+        else{
+
+            return "." + back_trace(i+1,j, back_pointer);
+        }
+    }
+
+    else if (back_pointer[i][j] != 0){
+        int k = back_pointer[i][j];
+
+        assert(k + 1 > 0 && k + 1 <= seq_length);
+
+        string temp;
+
+        if (k == j){
+            temp = "";
+        }
+        else{
+            temp = back_trace(k+1,j, back_pointer);
+        }
+
+        return "(" + back_trace(i+1,k-1, back_pointer) + ")" + temp;
+    }
+
+
+    // return "";
+    assert(false);
+    return "";
+}
+
+
+
+
+pair<float, string> BeamCKYParser::PairProb_MEA() {
+    
+    vector<vector<float> > OPT;
+    OPT.resize(seq_length);
+
+    for (int i = 0; i < seq_length; ++i){
+        OPT[i].resize(seq_length);
+    }
+
+    vector<vector<float> > P;
+    P.resize(seq_length);
+
+    for (int i = 0; i < seq_length; ++i){
+        P[i].resize(seq_length);
+    }
+
+
+    vector<vector<int> > back_pointer;
+    back_pointer.resize(seq_length);
+
+    for (int i = 0; i < seq_length; ++i){
+        back_pointer[i].resize(seq_length);
+    }
+
+    vector<vector<int>> paired;
+
+    paired.resize(seq_length);
+
+
+    vector<float> Q;
+    for (int i = 0; i < seq_length; ++i){
+        Q.push_back(float(1.0));
+    }
+
+
+
+    int count = 0;
+    for(auto& pij : Pij){
+        count+=1;
+        auto i = pij.first.first-1;
+        auto j = pij.first.second-1;
+        auto score = pij.second;
+
+        P[i][j] = score;
+
+        // if (score < 0.000001)
+        //     continue;
+
+        paired[i].push_back(j);
+        // assert(i<j);
+        Q[i] -= score;
+        Q[j] -= score;
+
+    }
+
+
+    for (int i = 0; i < seq_length; ++i){
+        std::sort (paired[i].begin(), paired[i].end());
+    }
+
+
+    // clock_t tt = clock();
+
+
+    for (int l = 0; l< seq_length; l++){
+
+        for (int i = 0; i<seq_length - l; i++){
+            int j = i + l;
+
+            if (i == j){
+                OPT[i][j] = Q[i];
+                back_pointer[i][j] = -1;
+                continue;
+            }
+
+            OPT[i][j] = OPT[i][i] + OPT[i+1][j];
+            back_pointer[i][j] = -1;
+
+            for (int k : paired[i]){
+
+                if (k>j){
+                    break;
+                }
+
+                float temp_OPT_k1_j;
+                if (k<j){
+                    temp_OPT_k1_j = OPT[k+1][j];
+                }
+                else{
+
+                    temp_OPT_k1_j = float(0.);
+                }
+ 
+                auto temp_score = 2 * gamma * P[i][k] + OPT[i+1][k-1] + temp_OPT_k1_j;
+                if (OPT[i][j] < temp_score){
+                    OPT[i][j] = temp_score;
+
+                    back_pointer[i][j] = k;
+
+                }
+
+            }
+
+        }
+    
+    }
+
+
+
+    auto structure = back_trace(0,seq_length-1, back_pointer);
+    return make_pair(OPT[0][seq_length-1], structure);
+
+}
+
+
+
+
+
+
+
+
+
 void BeamCKYParser::outside(vector<int> next_pair[]){
       
     struct timeval parse_starttime, parse_endtime;

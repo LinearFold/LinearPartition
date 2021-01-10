@@ -68,6 +68,27 @@ Partition function calculation only. (default False)
 -c THRESHOLD
 ```
 Only output base pair probability larger than user specified threshold between 0 and 1. (DEFAULT=0.0)
+```
+
+--dumpforest
+```
+dump forest (all nodes with inside [and outside] log partition functions but no hyperedges) for downstream tasks such as sampling and accessibility (DEFAULT=None)
+
+```
+--MEA
+```
+get MEA structure, (DEFAULT=FALSE)
+
+```
+--gamma
+```
+set MEA gamma, (DEFAULT=3.0)
+
+```
+--MEA_output
+```
+output MEA structure to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)
+
 
 ## Example: Run Predict
 ```
@@ -110,3 +131,10 @@ GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
 Free Energy of Ensemble: -32.14 kcal/mol
 Partition Function Calculation Time: 0.005509 seconds.
 ```
+
+## Example: Run Prediction and Print MEA structure
+```
+echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V --MEA
+GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
+Free Energy of Ensemble: -32.14 kcal/mol
+(((((((..((((.......))))((((((((...)))))))).(((((.......))))))))))))....
