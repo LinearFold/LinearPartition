@@ -67,6 +67,7 @@ public:
     string bpp_file_index;
     bool pf_only;
     float bpp_cutoff;
+  string forest_file;
 
     // struct DecoderResult {
     //     float alpha;
@@ -80,7 +81,8 @@ public:
                   string bppfile="",
                   string bppfileindex="",
                   bool pf_only=false,
-                  float bpp_cutoff=0.0);
+                  float bpp_cutoff=0.0,
+		  string forestfile="");
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);
@@ -106,6 +108,10 @@ private:
     void cal_PairProb(State& viterbi); 
 
     void outside(vector<int> next_pair[]);
+
+  void dump_forest(string seq, bool inside_only);
+  void print_states(FILE *fptr, unordered_map<int, State>& states, int j, string label, bool inside_only, double threshold);
+
 
     float beam_prune(unordered_map<int, State>& beamstep);
 

@@ -303,7 +303,6 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
     if(is_verbose) printf("Base Pairing Probabilities Calculation Time: %.2f seconds.\n", parse_elapsed_time);
 // #endif
 
-
     fflush(stdout);
 
     return;

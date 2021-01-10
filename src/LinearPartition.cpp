@@ -485,8 +485,14 @@ void BeamCKYParser::parse(string& seq) {
 
     fflush(stdout);
 
+    // lhuang
+    if (pf_only && !forest_file.empty())
+      dump_forest(seq, true); // inside-only forest
+
     if(!pf_only){
         outside(next_pair);
+	if (!forest_file.empty())
+	  dump_forest(seq, false); // inside-outside forest
         cal_PairProb(viterbi);
     }
 
@@ -497,20 +503,56 @@ void BeamCKYParser::parse(string& seq) {
     return;
 }
 
+void BeamCKYParser::print_states(FILE *fptr, unordered_map<int, State>& states, int j, string label, bool inside_only, double threshold) {    
+    for (auto & item : states) {
+      int i = item.first;
+      State & state = item.second;
+      if (inside_only)
+	fprintf(fptr, "%s %d %d %.5lf\n", label.c_str(), i+1, j+1, state.alpha);
+      else
+	if (state.alpha + state.beta > threshold) // lhuang : alpha + beta - totalZ < ...
+	  fprintf(fptr, "%s %d %d %.5lf %.5lf\n", label.c_str(), i+1, j+1, state.alpha, state.beta);
+    }
+}
+
+void BeamCKYParser::dump_forest(string seq, bool inside_only) {  
+  printf("Dumping (%s) Forest to %s...\n", (inside_only ? "Inside-Only" : "Inside-Outside"), forest_file.c_str());
+  FILE *fptr = fopen(forest_file.c_str(), "w");  // lhuang: should be fout >>
+  fprintf(fptr, "%s\n", seq.c_str());
+  int n = seq.length(), j;
+  for (j = 0; j < n; j++) {
+    if (inside_only)
+      fprintf(fptr, "E %d %.5lf\n", j+1, bestC[j].alpha);
+    else
+      fprintf(fptr, "E %d %.5lf %.5lf\n", j+1, bestC[j].alpha, bestC[j].beta);
+  }
+  double threshold = bestC[n-1].alpha - 9.91152; // lhuang -9.xxx or ?
+  for (j = 0; j < n; j++) 
+    print_states(fptr, bestP[j], j, "P", inside_only, threshold);
+  for (j = 0; j < n; j++) 
+    print_states(fptr, bestM[j], j, "M", inside_only, threshold);
+  for (j = 0; j < n; j++) 
+    print_states(fptr, bestM2[j], j, "M2", inside_only, threshold);
+  for (j = 0; j < n; j++) 
+    print_states(fptr, bestMulti[j], j, "Multi", inside_only, threshold);
+}
+
 BeamCKYParser::BeamCKYParser(int beam_size,
                              bool nosharpturn,
                              bool verbose,
                              string bppfile,
                              string bppfileindex,
                              bool pfonly,
-                             float bppcutoff)
+                             float bppcutoff,
+			     string forestfile)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
       bpp_file(bppfile),
       bpp_file_index(bppfileindex),
       pf_only(pfonly),
-      bpp_cutoff(bppcutoff) {
+      bpp_cutoff(bppcutoff),
+      forest_file(forestfile) {
 #ifdef lpv
         initialize();
 #else
@@ -533,6 +575,7 @@ int main(int argc, char** argv){
     string bpp_prefix;
     bool pf_only = false;
     float bpp_cutoff = 0.0;
+    string forest_file;
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -542,6 +585,7 @@ int main(int argc, char** argv){
         bpp_prefix = argv[5];
         pf_only = atoi(argv[6]) == 1;
         bpp_cutoff = atof(argv[7]);
+	forest_file = argv[8];
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -591,7 +635,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file);
 
         // BeamCKYParser::DecoderResult result = parser.parse(seq);
         parser.parse(seq);
