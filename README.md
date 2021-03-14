@@ -142,7 +142,7 @@ Free Energy of Ensemble: -32.14 kcal/mol
 
 
 
-## Example: Run Prediction and output ThreshKnot structure in bpseq format
+## Example: Run Prediction and Output ThreshKnot structure in bpseq format
 ```
 echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V --ThreshKnot --ThreshKnot_threshold 0.3
 GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
