@@ -219,3 +219,11 @@ Free Energy of Ensemble: -32.14 kcal/mol
 70 C 0
 71 C 0
 72 A 0
+
+
+
+
+References
+-------------
+
+Liang Zhang, He Zhang, David H Mathews, and Liang Huang. Threshknot: Thresholded probknot for improved RNA secondary structure prediction. arXiv preprint arXiv:1912.12796.
