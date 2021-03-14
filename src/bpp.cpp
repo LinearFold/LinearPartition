@@ -7,12 +7,13 @@
 */
 
 #include <stdio.h> 
+#include <set>
+#include <algorithm>
 #include "LinearPartition.h"
 
 using namespace std;
 
 void BeamCKYParser::output_to_file(string file_name, const char * type) {
-
     if(!file_name.empty()) {
         printf("Outputing base pairing probability matrix to %s...\n", file_name.c_str()); 
         FILE *fptr = fopen(file_name.c_str(), type); 
@@ -38,6 +39,51 @@ void BeamCKYParser::output_to_file(string file_name, const char * type) {
 
     return;
 }
+
+void BeamCKYParser::output_to_file_threshknot_bpseq(string file_name, const char * type, map<int,int>& pairs, string & seq) {
+
+    int i,j;
+    char nuc;
+    if(!file_name.empty()) {
+        printf("Outputing ThreshKnot base pairing matrix to %s...\n", file_name.c_str()); 
+        FILE *fptr = fopen(file_name.c_str(), type); 
+        if (fptr == NULL) { 
+            printf("Could not open file!\n"); 
+            return; 
+        }
+
+
+        for (int i = 1; i <= seq_length; i++) {
+            if (pairs.find(i) != pairs.end()){
+                j = pairs[i];
+            }
+            else{
+                j = 0;
+            }
+            nuc = seq[i-1];
+            fprintf(fptr, "%d %c %d\n", i, nuc, j);
+        }
+
+        fprintf(fptr, "\n");
+        fclose(fptr); 
+        printf("Done!\n"); 
+    }
+    else{
+        for (int i = 1; i <= seq_length; i++) {
+            if (pairs.find(i) != pairs.end()){
+                j = pairs[i];
+            }
+            else{
+                j = 0;
+            }
+            nuc = seq[i-1];
+            printf("%d %c %d\n", i, nuc, j);
+        }
+        printf("\n");
+    }
+
+}
+
 
 void BeamCKYParser::cal_PairProb(State& viterbi) {
 
@@ -115,6 +161,61 @@ string BeamCKYParser::back_trace(const int i, const int j, const vector<vector<i
 }
 
 
+
+
+void BeamCKYParser::ThreshKnot(string & seq){
+    
+    map<int, float> rowprob;
+    vector<tuple<int, int, float> > prob_list;
+
+    map<int, int> pairs;
+    set<int> visited;
+
+    for(auto& pij : Pij){
+        auto i = pij.first.first; //index starts from 1
+        auto j = pij.first.second; 
+        auto score = pij.second;
+
+        if (score < threshknot_threshold){
+            continue;
+        }
+
+        prob_list.push_back(make_tuple(i,j,score));
+
+        rowprob[i] = max(rowprob[i], score);
+        rowprob[j] = max(rowprob[j], score);
+
+    }
+
+
+    for(auto& elem : prob_list){
+
+        auto i = std::get<0>(elem);
+        auto j = std::get<1>(elem);
+        auto score =  std::get<2>(elem);
+
+
+
+        if (score == rowprob[i] && score == rowprob[j]){
+
+            if ((visited.find(i) != visited.end()) || (visited.find(j) != visited.end())){
+                continue;
+            }
+            visited.insert(i);
+            visited.insert(j);
+
+            pairs[i] = j;
+            pairs[j] = i;
+
+
+        }
+    }
+
+
+    output_to_file_threshknot_bpseq(threshknot_file_index, "w", pairs, seq);
+
+
+}
 
 
 pair<float, string> BeamCKYParser::PairProb_MEA() {

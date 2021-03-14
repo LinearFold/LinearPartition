@@ -491,9 +491,9 @@ void BeamCKYParser::parse(string& seq) {
 
     if(!pf_only){
         outside(next_pair);
-	if (!forest_file.empty())
-	  dump_forest(seq, false); // inside-outside forest
-        cal_PairProb(viterbi);
+    	if (!forest_file.empty())
+    	  dump_forest(seq, false); // inside-outside forest
+            cal_PairProb(viterbi);
 
         if (mea_){
 
@@ -510,7 +510,7 @@ void BeamCKYParser::parse(string& seq) {
             }
 
             else{
-                FILE *fptr = fopen(MEA_file.c_str(), "w");
+                FILE *fptr = fopen(MEA_file.c_str(), "a");
 
                 if (fptr == NULL) { 
                     printf("Could not open MEA output file!\n"); 
@@ -523,6 +523,10 @@ void BeamCKYParser::parse(string& seq) {
                 }
             }
 
+        }
+
+        if (threshknot_){
+            ThreshKnot(seq);
         }
 
 
@@ -583,7 +587,10 @@ BeamCKYParser::BeamCKYParser(int beam_size,
 			                 string forestfile,
                              bool mea,
                              float MEA_gamma,
-                             string MEAfile)
+                             string MEAfile,
+                             bool ThreshKnot,
+                             float ThreshKnot_threshold,
+                             string ThreshKnot_file_index)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
@@ -594,7 +601,10 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       forest_file(forestfile), 
       mea_(mea),
       gamma(MEA_gamma),
-      MEA_file(MEAfile) {
+      MEA_file(MEAfile),
+      threshknot_(ThreshKnot),
+      threshknot_threshold(ThreshKnot_threshold),
+      threshknot_file_index(ThreshKnot_file_index) {
 #ifdef lpv
         initialize();
 #else
@@ -623,6 +633,10 @@ int main(int argc, char** argv){
     bool mea = false;
     string MEA_path;
 
+    float ThreshKnot_threshold = 0.3;
+    bool ThreshKnot = false;
+    // string ThreshKnot_path;
+    string ThresKnot_prefix;
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -636,6 +650,10 @@ int main(int argc, char** argv){
         mea = atoi(argv[9]) == 1;
         MEA_gamma = atof(argv[10]);
         MEA_path = argv[11];
+        ThreshKnot = atoi(argv[12]) == 1;
+        ThreshKnot_threshold = atof(argv[13]);
+        // ThreshKnot_path = argv[14];
+        ThresKnot_prefix = argv[14];
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -648,6 +666,7 @@ int main(int argc, char** argv){
 
     int seq_index = 0;
     string bpp_file_index = "";
+    string ThreshKnot_file_index = "";
     for (string seq; getline(cin, seq);) {
         if (seq.length() == 0)
             continue;
@@ -671,9 +690,13 @@ int main(int argc, char** argv){
             continue;
         }
 
+        seq_index ++;
         if (!bpp_prefix.empty()) {
-            seq_index ++;
             bpp_file_index = bpp_prefix + to_string(seq_index);
+        }
+
+        if (!ThresKnot_prefix.empty()){
+            ThreshKnot_file_index = ThresKnot_prefix + to_string(seq_index);
         }
 
         printf("%s\n", seq.c_str());
@@ -685,7 +708,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_path);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_path, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index);
 
         // BeamCKYParser::DecoderResult result = parser.parse(seq);
         parser.parse(seq);

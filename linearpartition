@@ -21,7 +21,10 @@ def setgflags():
     flags.DEFINE_boolean('MEA', False, "get MEA structure, (DEFAULT=FALSE)", short_name='m') 
     flags.DEFINE_float('gamma', 3., "set MEA gamma, (DEFAULT=3.0)", short_name='g')
     flags.DEFINE_string('MEA_output', '', "output MEA structure to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
-
+    flags.DEFINE_boolean('ThreshKnot', False, "get ThreshKnot structure, (DEFAULT=FALSE)") 
+    flags.DEFINE_float('ThreshKnot_threshold', 0.3, "set ThreshKnot threshold, (DEFAULT=0.3)")
+    # flags.DEFINE_string('ThreshKnot_output', '', "output ThreshKnot structure(s) to a file in .bpseq format with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
+    flags.DEFINE_string('ThreshKnot_prefix', '', "output ThreshKnot structure(s) to files in .bpseq format with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
 
 
     argv = FLAGS(sys.argv)
@@ -33,6 +36,7 @@ def main():
     is_verbose = '1' if FLAGS.verbose else '0'
     bpp_file = str(FLAGS.o)
     bpp_prefix = str(FLAGS.prefix) + "_" if FLAGS.prefix else ''
+    ThreshKnot_prefix = str(FLAGS.ThreshKnot_prefix) + "_" if FLAGS.ThreshKnot_prefix else ''
     # pf_only = '1' if FLAGS.p else '0'
     pf_only = '1' if (FLAGS.p and not FLAGS.MEA) else '0'
     bpp_cutoff = str(FLAGS.c)
@@ -40,6 +44,10 @@ def main():
     MEA_output = str(FLAGS.MEA_output)
     mea = '1' if FLAGS.MEA else '0'
     gamma = str(FLAGS.g)
+
+    TK = '1' if FLAGS.ThreshKnot else '0'
+    threshold = str(FLAGS.ThreshKnot_threshold)
+    # ThreshKnot_output = str(FLAGS.ThreshKnot_output)
 
 
 
@@ -76,8 +84,13 @@ def main():
         MEA_output = str(FLAGS.MEA_output)
         if os.path.exists(MEA_output): os.remove(MEA_output)
 
+    # if FLAGS.ThreshKnot_output:
+    #     ThreshKnot_output = str(FLAGS.ThreshKnot_output)
+    #     if os.path.exists(ThreshKnot_output): os.remove(ThreshKnot_output)
+
+
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, MEA_output]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, MEA_output ,TK, threshold, ThreshKnot_prefix]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':

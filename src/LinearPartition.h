@@ -14,6 +14,7 @@
 #include <vector>
 #include <unordered_map>
 #include <math.h> 
+#include <set>
 
 // #define MIN_CUBE_PRUNING_SIZE 20
 #define kT 61.63207755
@@ -49,6 +50,20 @@ struct hash_pair {
     } 
 };
 
+
+
+struct comp
+{
+    template<typename T>
+    bool operator()(const T& l, const T& r) const
+    {
+        if (l.first == r.first)
+            return l.second < r.second;
+ 
+        return l.first < r.first;
+    }
+};
+
 struct State {
 
     float alpha;
@@ -71,6 +86,10 @@ public:
     bool mea_;
     float gamma;
     string MEA_file;
+    bool threshknot_;
+    float threshknot_threshold;
+    // string threshknot_file;
+    string threshknot_file_index;
 
     // struct DecoderResult {
     //     float alpha;
@@ -88,7 +107,10 @@ public:
 		          string forestfile="",
                   bool mea_=false,
                   float gamma=3.0,
-                  string MEAfile="");
+                  string MEAfile="",
+                  bool threshknot_=false,
+                  float threshknot_threshold=0.3,
+                  string threshknot_file_index="");
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);
@@ -115,6 +137,8 @@ private:
 
     pair<float,string> PairProb_MEA();
 
+    void ThreshKnot(string & seq);
+
     string back_trace(const int i, const int j, const vector<vector<int> >& back_pointer);
 
     void outside(vector<int> next_pair[]);
@@ -131,8 +155,14 @@ private:
     unordered_map<pair<int,int>, float, hash_pair> Pij;
 
     void output_to_file(string file_name, const char * type);
+    void output_to_file_threshknot_bpseq(string file_name, const char * type, map<int,int> & pairs, string & seq);
 
 };
+
+
+
+
+
 
 
 // log space: borrowed from CONTRAfold
