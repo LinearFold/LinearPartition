@@ -476,12 +476,12 @@ void BeamCKYParser::parse(string& seq) {
     // unsigned long nos_tot = nos_H + nos_P + nos_M2 + nos_Multi + nos_M + nos_C;
 
 #ifdef lpv
-    printf("Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
+    fprintf(stderr,"Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
 #else
-    printf("Log Partition Coefficient: %.5f\n", viterbi.alpha);
+    fprintf(stderr,"Log Partition Coefficient: %.5f\n", viterbi.alpha);
 #endif
 
-    if(is_verbose) printf("Partition Function Calculation Time: %.2f seconds.\n", parse_elapsed_time);
+    if(is_verbose) fprintf(stderr,"Partition Function Calculation Time: %.2f seconds.\n", parse_elapsed_time);
 
     fflush(stdout);
 
@@ -497,31 +497,31 @@ void BeamCKYParser::parse(string& seq) {
 
         if (mea_){
 
-            clock_t t = clock();
+            // clock_t t = clock();
 
-            auto MEA_result = PairProb_MEA();
+            PairProb_MEA(seq);
             
 
-            if (MEA_file == ""){
-                // cout<<"time: "<<((float)(clock()-t))/CLOCKS_PER_SEC<<endl;
+            // if (MEA_file == ""){
+            //     // cout<<"time: "<<((float)(clock()-t))/CLOCKS_PER_SEC<<endl;
 
-                printf("%s\n", MEA_result.second.c_str());
+            //     printf("%s\n", MEA_result.second.c_str());
 
-            }
+            // }
 
-            else{
-                FILE *fptr = fopen(MEA_file.c_str(), "a");
+            // else{
+            //     FILE *fptr = fopen(MEA_file.c_str(), "a");
 
-                if (fptr == NULL) { 
-                    printf("Could not open MEA output file!\n"); 
-                    return;
-                } 
-                else{
-                    fprintf(fptr, "%s\n%s\nMEA score: %.2f\n", seq.c_str(), MEA_result.second.c_str(), MEA_result.first);
-                    fclose(fptr);
+            //     if (fptr == NULL) { 
+            //         printf("Could not open MEA output file!\n"); 
+            //         return;
+            //     } 
+            //     else{
+            //         fprintf(fptr, "%s\n%s\nMEA score: %.2f\n", seq.c_str(), MEA_result.second.c_str(), MEA_result.first);
+            //         fclose(fptr);
 
-                }
-            }
+            //     }
+            // }
 
         }
 
@@ -587,7 +587,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
 			                 string forestfile,
                              bool mea,
                              float MEA_gamma,
-                             string MEAfile,
+                             string MEA_file_index,
+                             bool MEA_bpseq,
                              bool ThreshKnot,
                              float ThreshKnot_threshold,
                              string ThreshKnot_file_index)
@@ -601,7 +602,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       forest_file(forestfile), 
       mea_(mea),
       gamma(MEA_gamma),
-      MEA_file(MEAfile),
+      mea_file_index(MEA_file_index),
+      bpseq(MEA_bpseq),
       threshknot_(ThreshKnot),
       threshknot_threshold(ThreshKnot_threshold),
       threshknot_file_index(ThreshKnot_file_index) {
@@ -631,12 +633,15 @@ int main(int argc, char** argv){
 
     float MEA_gamma = 3.0;
     bool mea = false;
-    string MEA_path;
+    bool MEA_bpseq = false;
+    // string MEA_path;
+    string MEA_prefix;
 
     float ThreshKnot_threshold = 0.3;
     bool ThreshKnot = false;
     // string ThreshKnot_path;
     string ThresKnot_prefix;
+
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -649,11 +654,13 @@ int main(int argc, char** argv){
     	forest_file = argv[8];
         mea = atoi(argv[9]) == 1;
         MEA_gamma = atof(argv[10]);
-        MEA_path = argv[11];
-        ThreshKnot = atoi(argv[12]) == 1;
-        ThreshKnot_threshold = atof(argv[13]);
-        // ThreshKnot_path = argv[14];
-        ThresKnot_prefix = argv[14];
+        // MEA_path = argv[11];
+        ThreshKnot = atoi(argv[11]) == 1;
+        ThreshKnot_threshold = atof(argv[12]);
+        ThresKnot_prefix = argv[13];
+        MEA_prefix = argv[14];
+        MEA_bpseq = atoi(argv[15]) == 1;
+
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -667,6 +674,8 @@ int main(int argc, char** argv){
     int seq_index = 0;
     string bpp_file_index = "";
     string ThreshKnot_file_index = "";
+    string MEA_file_index = "";
+
     for (string seq; getline(cin, seq);) {
         if (seq.length() == 0)
             continue;
@@ -699,7 +708,11 @@ int main(int argc, char** argv){
             ThreshKnot_file_index = ThresKnot_prefix + to_string(seq_index);
         }
 
-        printf("%s\n", seq.c_str());
+        if (!MEA_prefix.empty()){
+            MEA_file_index = MEA_prefix + to_string(seq_index);
+        }
+
+        // fprintf(stderr, "%s\n", seq.c_str());
         
         // convert to uppercase
         transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
@@ -708,7 +721,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_path, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index);
 
         // BeamCKYParser::DecoderResult result = parser.parse(seq);
         parser.parse(seq);

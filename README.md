@@ -75,7 +75,7 @@ Only output base pair probability larger than user specified threshold between 0
 dump forest (all nodes with inside [and outside] log partition functions but no hyperedges) for downstream tasks such as sampling and accessibility (DEFAULT=None)
 
 ```
---MEA
+--mea or -M
 ```
 get MEA structure, (DEFAULT=FALSE)
 
@@ -85,40 +85,54 @@ get MEA structure, (DEFAULT=FALSE)
 set MEA gamma, (DEFAULT=3.0)
 
 ```
---MEA_output
+--bpseq
 ```
-output MEA structure to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)
+output MEA structure(s) in bpseq format instead of dot-bracket format
+
+```
+--mea_prefix
+```
+output MEA structure(s) to file(s) with user specified prefix name
+
+```
+--threshknot or -T
+```
+get ThreshKnot structure, (DEFAULT=FALSE)
+
+```
+--threshold
+```
+set ThreshKnot threshknot, (DEFAULT=0.3)
+
+```
+--threshknot_prefix
+```
+output ThreshKnot structure(s) to file(s) with user specified prefix name
+
+
 
 
 ## Example: Run Predict
 ```
 cat testseq | ./linearpartition -V --prefix testseq_output
-UGAGUUCUCGAUCUCUAAAAUCG
 Free Energy of Ensemble: -1.96 kcal/mol
 Outputing base pairing probability matrix to testseq_output_1...
 Done!
-AAAACGGUCCUUAUCAGGACCAAACA
 Free Energy of Ensemble: -9.41 kcal/mol
 Outputing base pairing probability matrix to testseq_output_2...
 Done!
-AUUCUUGCUUCAACAGUGUUUGAACGGAAU
 Free Energy of Ensemble: -7.72 kcal/mol
 Outputing base pairing probability matrix to testseq_output_3...
 Done!
-UCGGCCACAAACACACAAUCUACUGUUGGUCGA
 Free Energy of Ensemble: -9.09 kcal/mol
 Outputing base pairing probability matrix to testseq_output_4...
 Done!
-GUUUUUAUCUUACACACGCUUGUGUAAGAUAGUUA
 Free Energy of Ensemble: -13.58 kcal/mol
 Outputing base pairing probability matrix to testseq_output_5...
 Done!
 
 echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -o output
-GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
 Log Partition Coefficient: 15.88268
-Partition Function Calculation Time: 0.004343 seconds.
-Base Pairing Probabilities Calculation Time: 0.003293 seconds.
 Outputing base pairing probability matrix to output...
 Done!
 ```
@@ -127,101 +141,82 @@ Done!
 ```
 echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -p --verbose
 beam size: 100
-GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
 Free Energy of Ensemble: -32.14 kcal/mol
-Partition Function Calculation Time: 0.005509 seconds.
+Partition Function Calculation Time: 0.01 seconds.
 ```
 
-## Example: Run Prediction and Print MEA structure
+## Example: Run Prediction and Output MEA structure
 ```
-echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V --MEA
-GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
+echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -M
 Free Energy of Ensemble: -32.14 kcal/mol
+GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
 (((((((..((((.......))))((((((((...)))))))).(((((.......))))))))))))....
 ```
 
-
-
 ## Example: Run Prediction and Output ThreshKnot structure in bpseq format
 ```
-echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -T --threshold 0.3
-GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
-Free Energy of Ensemble: -32.14 kcal/mol
-1 G 68
-2 G 67
-3 G 66
-4 C 65
-5 U 64
-6 C 63
-7 G 62
+echo GUUGUUAUAGCAUAAGAAGUGCAUUUGUUUUAAGCGUAAAAGAUAUGGGACAACUCCA | ./linearpartition -V -T --threshold 0
+Free Energy of Ensemble: -8.74 kcal/mol
+GUUGUUAUAGCAUAAGAAGUGCAUUUGUUUUAAGCGUAAAAGAUAUGGGACAACUCCA
+1 G 54
+2 U 53
+3 U 52
+4 G 51
+5 U 50
+6 U 49
+7 A 0
 8 U 0
 9 A 0
-10 G 24
-11 A 23
-12 U 22
-13 C 21
+10 G 22
+11 C 21
+12 A 20
+13 U 19
 14 A 0
-15 G 0
-16 C 0
-17 G 0
-18 G 0
-19 U 0
-20 A 0
-21 G 13
-22 A 12
-23 U 11
-24 C 10
-25 G 43
-26 C 42
-27 U 41
-28 U 40
-29 C 39
-30 C 38
-31 U 37
-32 U 36
-33 C 0
-34 G 0
-35 C 0
-36 A 32
-37 A 31
-38 G 30
-39 G 29
-40 A 28
-41 A 27
-42 G 26
-43 C 25
-44 C 0
-45 C 61
-46 U 60
-47 G 59
-48 G 58
-49 G 57
-50 U 0
-51 U 0
-52 C 0
-53 A 0
-54 A 0
-55 A 0
-56 U 0
-57 C 49
-58 C 48
-59 C 47
-60 A 46
-61 G 45
-62 C 7
-63 G 6
-64 A 5
-65 G 4
-66 U 3
-67 C 2
-68 C 1
-69 A 0
-70 C 0
-71 C 0
-72 A 0
+15 A 0
+16 G 0
+17 A 0
+18 A 0
+19 G 13
+20 U 12
+21 G 11
+22 C 10
+23 A 0
+24 U 34
+25 U 33
+26 U 45
+27 G 44
+28 U 43
+29 U 42
+30 U 41
+31 U 40
+32 A 37
+33 A 25
+34 G 24
+35 C 47
+36 G 46
+37 U 32
+38 A 0
+39 A 0
+40 A 31
+41 A 30
+42 G 29
+43 A 28
+44 U 27
+45 A 26
+46 U 36
+47 G 35
+48 G 0
+49 G 6
+50 A 5
+51 C 4
+52 A 3
+53 A 2
+54 C 1
+55 U 0
+56 C 0
+57 C 0
+58 A 0
 ```
-
-
 
 References
 -------------

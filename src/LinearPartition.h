@@ -85,17 +85,14 @@ public:
     string forest_file;
     bool mea_;
     float gamma;
-    string MEA_file;
+    // string MEA_file;
+    string mea_file_index;
+    bool bpseq;
     bool threshknot_;
     float threshknot_threshold;
     // string threshknot_file;
     string threshknot_file_index;
 
-    // struct DecoderResult {
-    //     float alpha;
-    //     // unsigned long num_states;
-    //     double time;
-    // };
 
     BeamCKYParser(int beam_size=100,
                   bool nosharpturn=true,
@@ -107,7 +104,8 @@ public:
 		          string forestfile="",
                   bool mea_=false,
                   float gamma=3.0,
-                  string MEAfile="",
+                  string mea_file_index="",
+                  bool bpseq=false,
                   bool threshknot_=false,
                   float threshknot_threshold=0.3,
                   string threshknot_file_index="");
@@ -135,16 +133,17 @@ private:
 
     void cal_PairProb(State& viterbi); 
 
-    pair<float,string> PairProb_MEA();
+    void PairProb_MEA(string & seq);
 
     void ThreshKnot(string & seq);
 
     string back_trace(const int i, const int j, const vector<vector<int> >& back_pointer);
+    map<int, int> get_pairs(string & structure);
 
     void outside(vector<int> next_pair[]);
 
-  void dump_forest(string seq, bool inside_only);
-  void print_states(FILE *fptr, unordered_map<int, State>& states, int j, string label, bool inside_only, double threshold);
+    void dump_forest(string seq, bool inside_only);
+    void print_states(FILE *fptr, unordered_map<int, State>& states, int j, string label, bool inside_only, double threshold);
 
 
     float beam_prune(unordered_map<int, State>& beamstep);
@@ -155,7 +154,7 @@ private:
     unordered_map<pair<int,int>, float, hash_pair> Pij;
 
     void output_to_file(string file_name, const char * type);
-    void output_to_file_threshknot_bpseq(string file_name, const char * type, map<int,int> & pairs, string & seq);
+    void output_to_file_MEA_threshknot_bpseq(string file_name, const char * type, map<int,int> & pairs, string & seq);
 
 };
 

@@ -40,18 +40,17 @@ void BeamCKYParser::output_to_file(string file_name, const char * type) {
     return;
 }
 
-void BeamCKYParser::output_to_file_threshknot_bpseq(string file_name, const char * type, map<int,int>& pairs, string & seq) {
+void BeamCKYParser::output_to_file_MEA_threshknot_bpseq(string file_name, const char * type, map<int,int>& pairs, string & seq) {
 
     int i,j;
     char nuc;
     if(!file_name.empty()) {
-        printf("Outputing ThreshKnot base pairing matrix to %s...\n", file_name.c_str()); 
+        printf("Outputing base pairs in bpseq format to %s...\n", file_name.c_str()); 
         FILE *fptr = fopen(file_name.c_str(), type); 
         if (fptr == NULL) { 
             printf("Could not open file!\n"); 
             return; 
         }
-
 
         for (int i = 1; i <= seq_length; i++) {
             if (pairs.find(i) != pairs.end()){
@@ -84,7 +83,6 @@ void BeamCKYParser::output_to_file_threshknot_bpseq(string file_name, const char
 
 }
 
-
 void BeamCKYParser::cal_PairProb(State& viterbi) {
 
     for(int j=0; j<seq_length; j++){
@@ -112,15 +110,11 @@ void BeamCKYParser::cal_PairProb(State& viterbi) {
     else if (!bpp_file_index.empty()) {
         output_to_file(bpp_file_index, "w");
     }
-
     return;
 }
 
 
-
-
 string BeamCKYParser::back_trace(const int i, const int j, const vector<vector<int> >& back_pointer){
-    // cout<<"line 74 "<<i<<' '<<j<<endl;
 
     if (i>j){
         return "";
@@ -154,13 +148,30 @@ string BeamCKYParser::back_trace(const int i, const int j, const vector<vector<i
         return "(" + back_trace(i+1,k-1, back_pointer) + ")" + temp;
     }
 
-
-    // return "";
     assert(false);
     return "";
 }
 
+map<int, int> BeamCKYParser::get_pairs(string & structure){
+    map<int, int> pairs;
+    stack<int> s;
+    int index = 1;
+    int pre_index = 0;
+    for (auto & elem : structure){
+        if (elem == '('){
+            s.push(index);
+        }
+        else if(elem == ')'){
+            pre_index = s.top();
+            pairs[pre_index] = index;
+            pairs[index] = pre_index;
+            s.pop();
+        }
+        index++;
 
+    }
+    return pairs;
+}
 
 
 void BeamCKYParser::ThreshKnot(string & seq){
@@ -187,14 +198,11 @@ void BeamCKYParser::ThreshKnot(string & seq){
 
     }
 
-
     for(auto& elem : prob_list){
 
         auto i = std::get<0>(elem);
         auto j = std::get<1>(elem);
         auto score =  std::get<2>(elem);
-
-
 
         if (score == rowprob[i] && score == rowprob[j]){
 
@@ -207,18 +215,15 @@ void BeamCKYParser::ThreshKnot(string & seq){
             pairs[i] = j;
             pairs[j] = i;
 
-
         }
     }
 
-
-    output_to_file_threshknot_bpseq(threshknot_file_index, "w", pairs, seq);
-
+    fprintf(stderr, "%s\n", seq.c_str());
+    output_to_file_MEA_threshknot_bpseq(threshknot_file_index, "w", pairs, seq);
 
 }
 
-
-pair<float, string> BeamCKYParser::PairProb_MEA() {
+void BeamCKYParser::PairProb_MEA(string & seq) {
     
     vector<vector<float> > OPT;
     OPT.resize(seq_length);
@@ -252,35 +257,22 @@ pair<float, string> BeamCKYParser::PairProb_MEA() {
         Q.push_back(float(1.0));
     }
 
-
-
-    int count = 0;
     for(auto& pij : Pij){
-        count+=1;
         auto i = pij.first.first-1;
         auto j = pij.first.second-1;
         auto score = pij.second;
 
         P[i][j] = score;
 
-        // if (score < 0.000001)
-        //     continue;
-
         paired[i].push_back(j);
-        // assert(i<j);
         Q[i] -= score;
         Q[j] -= score;
 
     }
 
-
     for (int i = 0; i < seq_length; ++i){
         std::sort (paired[i].begin(), paired[i].end());
     }
-
-
-    // clock_t tt = clock();
-
 
     for (int l = 0; l< seq_length; l++){
 
@@ -318,26 +310,37 @@ pair<float, string> BeamCKYParser::PairProb_MEA() {
                     back_pointer[i][j] = k;
 
                 }
-
             }
-
         }
-    
     }
 
-
-
     auto structure = back_trace(0,seq_length-1, back_pointer);
-    return make_pair(OPT[0][seq_length-1], structure);
+
+    if (!bpseq){
+        if(!mea_file_index.empty()) {
+            FILE *fptr = fopen(mea_file_index.c_str(), "w"); 
+            if (fptr == NULL) { 
+                printf("Could not open file!\n"); 
+                return; 
+            }
+            fprintf(fptr, "%s\n", seq.c_str());
+            fprintf(fptr, "%s\n\n", structure.c_str());
+        }
+
+        else{
+            printf("%s\n", seq.c_str());
+            printf("%s\n\n", structure.c_str());
+        }
+
+
+    }
+
+    else{
+        auto pairs = get_pairs(structure);
+        output_to_file_MEA_threshknot_bpseq(mea_file_index, "w", pairs, seq);
+    }
 
 }
-
-
-
-
-
-
-
 
 
 void BeamCKYParser::outside(vector<int> next_pair[]){
