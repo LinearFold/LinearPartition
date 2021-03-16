@@ -65,7 +65,7 @@ Outputs base pairing probability matrices to files with user specified prefix. (
 ```
 Partition function calculation only. (default False)
 ```
--c THRESHOLD
+-c CUTOFF
 ```
 Only output base pair probability larger than user specified threshold between 0 and 1. (DEFAULT=0.0)
 ```
@@ -144,7 +144,7 @@ Free Energy of Ensemble: -32.14 kcal/mol
 
 ## Example: Run Prediction and Output ThreshKnot structure in bpseq format
 ```
-echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V --ThreshKnot --ThreshKnot_threshold 0.3
+echo GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA | ./linearpartition -V -T --threshold 0.3
 GGGCUCGUAGAUCAGCGGUAGAUCGCUUCCUUCGCAAGGAAGCCCUGGGUUCAAAUCCCAGCGAGUCCACCA
 Free Energy of Ensemble: -32.14 kcal/mol
 1 G 68

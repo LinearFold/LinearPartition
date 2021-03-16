@@ -18,11 +18,11 @@ def setgflags():
     flags.DEFINE_string('r', '', "output base pairing probability matrix to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
     flags.DEFINE_float('c', None, "only output base pair probability bigger than user specified threshold between 0 and 1 (DEFAULT=0.0)") # bpp cutoff
     flags.DEFINE_string("dumpforest", "", "dump forest (all nodes with inside [and outside] log partition functions but no hyperedges) for downstream tasks such as sampling and accessibility (DEFAULT=None)", short_name="f") # output (rewrite) mode
-    flags.DEFINE_boolean('MEA', False, "get MEA structure, (DEFAULT=FALSE)", short_name='m') 
+    flags.DEFINE_boolean('MEA', False, "get MEA structure", short_name='m') 
     flags.DEFINE_float('gamma', 3., "set MEA gamma, (DEFAULT=3.0)", short_name='g')
     flags.DEFINE_string('MEA_output', '', "output MEA structure to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
-    flags.DEFINE_boolean('ThreshKnot', False, "get ThreshKnot structure, (DEFAULT=FALSE)") 
-    flags.DEFINE_float('ThreshKnot_threshold', 0.3, "set ThreshKnot threshold, (DEFAULT=0.3)")
+    flags.DEFINE_boolean('ThreshKnot', False, "get ThreshKnot structure", short_name='T') 
+    flags.DEFINE_float('threshold', 0.3, "set ThreshKnot threshold (DEFAULT=0.3)")
     # flags.DEFINE_string('ThreshKnot_output', '', "output ThreshKnot structure(s) to a file in .bpseq format with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
     flags.DEFINE_string('ThreshKnot_prefix', '', "output ThreshKnot structure(s) to files in .bpseq format with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
 
@@ -46,10 +46,8 @@ def main():
     gamma = str(FLAGS.g)
 
     TK = '1' if FLAGS.ThreshKnot else '0'
-    threshold = str(FLAGS.ThreshKnot_threshold)
+    threshold = str(FLAGS.threshold)
     # ThreshKnot_output = str(FLAGS.ThreshKnot_output)
-
-
 
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
@@ -90,7 +88,7 @@ def main():
 
 
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, MEA_output ,TK, threshold, ThreshKnot_prefix]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, MEA_output, TK, threshold, ThreshKnot_prefix]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':
