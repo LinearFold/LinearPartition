@@ -107,7 +107,7 @@ set ThreshKnot threshknot, (DEFAULT=0.3)
 ```
 --threshknot_prefix
 ```
-output ThreshKnot structure(s) to file(s) with user specified prefix name
+output ThreshKnot structure(s) to file(s) with user specified prefix name (default False)
 
 
 
