@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import sys
+
+# bpp_file = sys.argv[1]
+seq_length = int(sys.argv[1])
+
+matrix = [[0.0 for x in range(seq_length)] for y in range(seq_length)]
+
+# data processing
+# for line in open(bpp_file):
+for line in sys.stdin.readlines():
+	line = line.strip()
+	if line == "": break
+	i, j, prob = line.split()
+	matrix[int(j)-1][int(i)-1] = float(prob)
+
+sns.set(style="white")
+
+matrix_ticks = pd.DataFrame(data=matrix,
+                 columns=range(1,seq_length+1),
+                 index=range(1,seq_length+1))
+
+# Generate a mask for the upper triangle
+mask = np.triu(np.ones_like(matrix, dtype=np.bool))
+
+# Set up the matplotlib figure
+f, ax = plt.subplots(figsize=(10, 10))
+
+# Generate a custom diverging colormap
+cmap = sns.diverging_palette(220, 10, as_cmap=True)
+# cmap = sns.diverging_palette(220, 10)
+
+sns.heatmap(matrix_ticks, mask=mask, cmap=cmap, vmax=1., center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5}, 
+            xticklabels="auto", yticklabels="auto")
+# plt.savefig(bpp_file+"_heatmap", format="pdf")
+plt.savefig("heatmap", format="pdf")
+
+
