@@ -238,7 +238,7 @@ GUUGUUAUAGCAUAAGAAGUGCAUUUGUUUUAAGCGUAAAAGAUAUGGGACAACUCCA
 ```
 cat ecoli_tRNA | ./draw_bpp_plot ecoli_tRNA_bpp
 ```
-![ecoli tRNA circular plot](./vis_examples/bpp_plot.pdf)
+![ecoli tRNA circular plot](./vis_examples/bpp_plot.png)
 
 ## Example: Draw Heatmap Plot
 ```
