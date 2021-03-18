@@ -238,13 +238,13 @@ GUUGUUAUAGCAUAAGAAGUGCAUUUGUUUUAAGCGUAAAAGAUAUGGGACAACUCCA
 ```
 cat ecoli_tRNA | ./draw_bpp_plot ecoli_tRNA_bpp
 ```
-<img src="./vis_examples/bpp_plot.png" width="200">
+<img src="./vis_examples/bpp_plot.png" width="400">
 
 ## Example: Draw Heatmap Plot
 ```
 cat ecoli_tRNA_bpp | ./draw_heatmap 76
 ```
-![ecoli tRNA heatmap plot](https://github.com/LinearFold/LinearPartition/blob/master/vis_examples/heatmap.pdf)
+<img src="./vis_examples/heatmap.png" width="400">
 
 References
 -------------
