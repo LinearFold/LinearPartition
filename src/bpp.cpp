@@ -90,11 +90,11 @@ void BeamCKYParser::cal_PairProb(State& viterbi) {
             int i = item.first;
             State state = item.second;
             
-            float temp_prob_inside = state.alpha + state.beta - viterbi.alpha;
-            if (temp_prob_inside > float(-9.91152)) {
-                float prob = Fast_Exp(temp_prob_inside);
-                if(prob > 1.0) prob = 1.0;
-                if(prob < bpp_cutoff) continue;
+            pf_type temp_prob_inside = state.alpha + state.beta - viterbi.alpha;
+            if (temp_prob_inside > pf_type(-9.91152)) {
+                pf_type prob = Fast_Exp(temp_prob_inside);
+                if(prob > pf_type(1.0)) prob = pf_type(1.0);
+                if(prob < pf_type(bpp_cutoff)) continue;
                 Pij[make_pair(i+1, j+1)] = prob;
             }
         }
@@ -116,38 +116,18 @@ void BeamCKYParser::cal_PairProb(State& viterbi) {
 
 string BeamCKYParser::back_trace(const int i, const int j, const vector<vector<int> >& back_pointer){
 
-    if (i>j){
-        return "";
-    }
-
+    if (i>j) return "";
     if (back_pointer[i][j] == -1){
-        if (i == j){
-            return ".";
-        }
-
-        else{
-
-            return "." + back_trace(i+1,j, back_pointer);
-        }
-    }
-
-    else if (back_pointer[i][j] != 0){
+        if (i == j) return ".";
+        else return "." + back_trace(i+1,j, back_pointer);
+    }else if (back_pointer[i][j] != 0){
         int k = back_pointer[i][j];
-
         assert(k + 1 > 0 && k + 1 <= seq_length);
-
         string temp;
-
-        if (k == j){
-            temp = "";
-        }
-        else{
-            temp = back_trace(k+1,j, back_pointer);
-        }
-
+        if (k == j) temp = "";
+        else temp = back_trace(k+1,j, back_pointer);
         return "(" + back_trace(i+1,k-1, back_pointer) + ")" + temp;
     }
-
     assert(false);
     return "";
 }
@@ -158,9 +138,7 @@ map<int, int> BeamCKYParser::get_pairs(string & structure){
     int index = 1;
     int pre_index = 0;
     for (auto & elem : structure){
-        if (elem == '('){
-            s.push(index);
-        }
+        if (elem == '(') s.push(index);
         else if(elem == ')'){
             pre_index = s.top();
             pairs[pre_index] = index;
@@ -168,16 +146,14 @@ map<int, int> BeamCKYParser::get_pairs(string & structure){
             s.pop();
         }
         index++;
-
     }
     return pairs;
 }
 
-
 void BeamCKYParser::ThreshKnot(string & seq){
     
-    map<int, float> rowprob;
-    vector<tuple<int, int, float> > prob_list;
+    map<int, pf_type> rowprob;
+    vector<tuple<int, int, pf_type> > prob_list;
 
     map<int, int> pairs;
     set<int> visited;
@@ -187,9 +163,7 @@ void BeamCKYParser::ThreshKnot(string & seq){
         auto j = pij.first.second; 
         auto score = pij.second;
 
-        if (score < threshknot_threshold){
-            continue;
-        }
+        if (score < threshknot_threshold) continue;
 
         prob_list.push_back(make_tuple(i,j,score));
 
@@ -206,56 +180,41 @@ void BeamCKYParser::ThreshKnot(string & seq){
 
         if (score == rowprob[i] && score == rowprob[j]){
 
-            if ((visited.find(i) != visited.end()) || (visited.find(j) != visited.end())){
-                continue;
-            }
+            if ((visited.find(i) != visited.end()) || (visited.find(j) != visited.end())) continue;
             visited.insert(i);
             visited.insert(j);
 
             pairs[i] = j;
             pairs[j] = i;
-
         }
     }
 
     fprintf(stderr, "%s\n", seq.c_str());
     output_to_file_MEA_threshknot_bpseq(threshknot_file_index, "w", pairs, seq);
-
 }
 
 void BeamCKYParser::PairProb_MEA(string & seq) {
     
-    vector<vector<float> > OPT;
+    vector<vector<pf_type> > OPT;
     OPT.resize(seq_length);
 
-    for (int i = 0; i < seq_length; ++i){
-        OPT[i].resize(seq_length);
-    }
+    for (int i = 0; i < seq_length; ++i) OPT[i].resize(seq_length);
 
-    vector<vector<float> > P;
+    vector<vector<pf_type>> P;
     P.resize(seq_length);
 
-    for (int i = 0; i < seq_length; ++i){
-        P[i].resize(seq_length);
-    }
-
+    for (int i = 0; i < seq_length; ++i) P[i].resize(seq_length);
 
     vector<vector<int> > back_pointer;
     back_pointer.resize(seq_length);
 
-    for (int i = 0; i < seq_length; ++i){
-        back_pointer[i].resize(seq_length);
-    }
+    for (int i = 0; i < seq_length; ++i) back_pointer[i].resize(seq_length);
 
     vector<vector<int>> paired;
-
     paired.resize(seq_length);
 
-
-    vector<float> Q;
-    for (int i = 0; i < seq_length; ++i){
-        Q.push_back(float(1.0));
-    }
+    vector<pf_type> Q;
+    for (int i = 0; i < seq_length; ++i) Q.push_back(pf_type(1.0));
 
     for(auto& pij : Pij){
         auto i = pij.first.first-1;
@@ -267,48 +226,28 @@ void BeamCKYParser::PairProb_MEA(string & seq) {
         paired[i].push_back(j);
         Q[i] -= score;
         Q[j] -= score;
-
     }
 
-    for (int i = 0; i < seq_length; ++i){
-        std::sort (paired[i].begin(), paired[i].end());
-    }
-
+    for (int i = 0; i < seq_length; ++i) std::sort (paired[i].begin(), paired[i].end());
     for (int l = 0; l< seq_length; l++){
-
         for (int i = 0; i<seq_length - l; i++){
             int j = i + l;
-
             if (i == j){
                 OPT[i][j] = Q[i];
                 back_pointer[i][j] = -1;
                 continue;
             }
-
             OPT[i][j] = OPT[i][i] + OPT[i+1][j];
             back_pointer[i][j] = -1;
-
             for (int k : paired[i]){
-
-                if (k>j){
-                    break;
-                }
-
-                float temp_OPT_k1_j;
-                if (k<j){
-                    temp_OPT_k1_j = OPT[k+1][j];
-                }
-                else{
-
-                    temp_OPT_k1_j = float(0.);
-                }
- 
+                if (k>j) break;
+                pf_type temp_OPT_k1_j;
+                if (k<j) temp_OPT_k1_j = OPT[k+1][j];
+                else temp_OPT_k1_j = pf_type(0.);
                 auto temp_score = 2 * gamma * P[i][k] + OPT[i+1][k-1] + temp_OPT_k1_j;
                 if (OPT[i][j] < temp_score){
                     OPT[i][j] = temp_score;
-
                     back_pointer[i][j] = k;
-
                 }
             }
         }
@@ -331,23 +270,19 @@ void BeamCKYParser::PairProb_MEA(string & seq) {
             printf("%s\n", seq.c_str());
             printf("%s\n\n", structure.c_str());
         }
-
-
     }
 
     else{
         auto pairs = get_pairs(structure);
         output_to_file_MEA_threshknot_bpseq(mea_file_index, "w", pairs, seq);
     }
-
 }
 
 
 void BeamCKYParser::outside(vector<int> next_pair[]){
       
-    struct timeval parse_starttime, parse_endtime;
-
-    gettimeofday(&parse_starttime, NULL);
+    struct timeval bpp_starttime, bpp_endtime;
+    gettimeofday(&bpp_starttime, NULL);
 
     bestC[seq_length-1].beta = 0.0;
 
@@ -445,9 +380,9 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                             if (p == i - 1 && q == j + 1) {
                                 // helix
 #ifdef lpv
-                                int score_single = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
+                                newscore = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
                                                              nuci_1, nuci, nucj, nucj1);
-                                Fast_LogPlusEquals(state.beta, (bestP[q][p].beta + score_single/kT));
+                                Fast_LogPlusEquals(state.beta, bestP[q][p].beta + newscore/kT);
 #else
                                 newscore = score_helix(nucp, nucp1, nucq_1, nucq);
                                 Fast_LogPlusEquals(state.beta, bestP[q][p].beta + newscore);
@@ -455,9 +390,9 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                             } else {
                                 // single branch
 #ifdef lpv
-                                int score_single = - v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
+                                newscore = - v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
                                                    nuci_1, nuci, nucj, nucj1);
-                                Fast_LogPlusEquals(state.beta, (bestP[q][p].beta + score_single/kT));
+                                Fast_LogPlusEquals(state.beta, bestP[q][p].beta + newscore/kT);
 #else
                                 newscore = score_junction_B(p, q, nucp, nucp1, nucq_1, nucq) +
                                         precomputed + 
@@ -473,8 +408,8 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 // 2. M = P
                 if(i > 0 && j < seq_length-1){
 #ifdef lpv
-                        int score_M1 = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(state.beta, (beamstepM[i].beta + score_M1/kT));
+                        newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+                        Fast_LogPlusEquals(state.beta, beamstepM[i].beta + newscore/kT);
 #else
                         newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
                         Fast_LogPlusEquals(state.beta, beamstepM[i].beta + newscore);
@@ -485,13 +420,13 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 int k = i - 1;
                 if ( k > 0 && !bestM[k].empty()) {
 #ifdef lpv
-                    int M1_score = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
-                    float m1_alpha = M1_score/kT;
+                    newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+                    pf_type m1_alpha = newscore/kT;
 #else
                     newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
-                    float m1_alpha = newscore;
+                    pf_type m1_alpha = newscore;
 #endif
-                    float m1_plus_P_alpha = state.alpha + m1_alpha;
+                    pf_type m1_plus_P_alpha = state.alpha + m1_alpha;
                     for (auto &m : bestM[k]) {
                         int newi = m.first;
                         State& m_state = m.second;
@@ -507,22 +442,22 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                         int nuck = nuci_1;
                         int nuck1 = nuci;
 #ifdef lpv
-                        int score_external_paired = - v_score_external_paired(k+1, j, nuck, nuck1,
+                        newscore = - v_score_external_paired(k+1, j, nuck, nuck1,
                                                                  nucj, nucj1, seq_length);
-                        float external_paired_alpha_plus_beamstepC_beta = beamstepC.beta + score_external_paired/kT;
+                        pf_type external_paired_alpha_plus_beamstepC_beta = beamstepC.beta + newscore/kT;
 
 #else
                         newscore = score_external_paired(k+1, j, nuck, nuck1, nucj, nucj1, seq_length);
-                        float external_paired_alpha_plus_beamstepC_beta = beamstepC.beta + newscore;
+                        pf_type external_paired_alpha_plus_beamstepC_beta = beamstepC.beta + newscore;
 #endif
                         Fast_LogPlusEquals(bestC[k].beta, state.alpha + external_paired_alpha_plus_beamstepC_beta);
                         Fast_LogPlusEquals(state.beta, bestC[k].alpha + external_paired_alpha_plus_beamstepC_beta);
                     } else {
                         // value_type newscore;
 #ifdef lpv
-                        int score_external_paired = - v_score_external_paired(0, j, -1, nucs[0],
+                        newscore = - v_score_external_paired(0, j, -1, nucs[0],
                                                                  nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(state.beta, (beamstepC.beta + score_external_paired/kT));
+                        Fast_LogPlusEquals(state.beta, (beamstepC.beta + newscore/kT));
 #else
                         newscore = score_external_paired(0, j, -1, nucs[0],
                                                              nucj, nucj1, seq_length);
@@ -558,8 +493,8 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 // 2. generate P (i, j)
                 {
 #ifdef lpv
-                    int score_multi = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
-                    Fast_LogPlusEquals(state.beta, (beamstepP[i].beta + score_multi/kT));
+                    newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
+                    Fast_LogPlusEquals(state.beta, beamstepP[i].beta + newscore/kT);
 #else
                     newscore = score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
                     Fast_LogPlusEquals(state.beta, beamstepP[i].beta + newscore);
@@ -569,12 +504,10 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
         }
     }  // end of for-loo j
 
-    gettimeofday(&parse_endtime, NULL);
-    double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
+    gettimeofday(&bpp_endtime, NULL);
+    double bpp_elapsed_time = bpp_endtime.tv_sec - bpp_starttime.tv_sec + (bpp_endtime.tv_usec-bpp_starttime.tv_usec)/1000000.0;
 
-// #ifdef testtime
-    if(is_verbose) printf("Base Pairing Probabilities Calculation Time: %.2f seconds.\n", parse_elapsed_time);
-// #endif
+    if(is_verbose) fprintf(stderr,"Base Pairing Probabilities Calculation Time: %.2f seconds.\n", bpp_elapsed_time);
 
     fflush(stdout);
 
