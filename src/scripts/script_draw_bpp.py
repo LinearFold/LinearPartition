@@ -280,10 +280,13 @@ for index, line in enumerate(sys.stdin):
 
         angle = 360./(length+lengthfix)
         angle = 450-angle
-        if length <= 100:
+        if length <= 50:
+            angle5 = angle - 30
+            angle3 = angle + 30
+        elif length <= 100:
             angle5 = angle - 20
             angle3 = angle + 20
-        if length <= 200:
+        elif length <= 200:
             angle5 = angle - 17
             angle3 = angle + 17
         else:
