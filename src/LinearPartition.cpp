@@ -288,6 +288,14 @@ void BeamCKYParser::parse(string& seq) {
 #ifdef lpv
                                 newscore = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
                                                              nuci_1, nuci, nucj, nucj1);
+
+                                // SHAPE for Vienna only
+                                if (use_shape)
+                                {
+                                    newscore += -(pseudo_energy_stack[p] + pseudo_energy_stack[i] + pseudo_energy_stack[j] + pseudo_energy_stack[q]);
+                                }
+
+
                                 Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
 #else
                                 newscore = score_helix(nucp, nucp1, nucq_1, nucq);
@@ -512,7 +520,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              bool MEA_bpseq,
                              bool ThreshKnot,
                              float ThreshKnot_threshold,
-                             string ThreshKnot_file_index)
+                             string ThreshKnot_file_index,
+                             string shape_file_path)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
@@ -527,13 +536,58 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       bpseq(MEA_bpseq),
       threshknot_(ThreshKnot),
       threshknot_threshold(ThreshKnot_threshold),
-      threshknot_file_index(ThreshKnot_file_index) {
+      threshknot_file_index(ThreshKnot_file_index){
 #ifdef lpv
         initialize();
 #else
         initialize();
         initialize_cachesingle();
 #endif
+
+    if (shape_file_path != "" ){
+        use_shape = true;
+        int position;
+        string data;
+
+        double temp_after_mb_shape;
+
+        ifstream in(shape_file_path);
+
+        if (!in.good()){
+            cout<<"Reading SHAPE file error!"<<endl;
+            assert(false);
+        }
+
+        // actually, we can combine the SHAPE_data and the energy_stack together
+        while (!(in >> position >> data).fail()) {
+            // cout<<"position data "<< int(position)<<endl<<data<<endl;
+            // assert(int(position) == SHAPE_data.size() + 1);
+            // cout<<"data "<<data<<endl;
+            if (isdigit(int(data[0])) == 0){
+                SHAPE_data.push_back(double((-1.000000)));
+            }
+
+            else {
+                SHAPE_data.push_back(stod(data));
+            }
+            
+
+        }
+
+        for (int i = 0; i<SHAPE_data.size(); i++){
+            temp_after_mb_shape = SHAPE_data[i] < 0 ? 0. : (m * log(SHAPE_data[i] + 1) + b);
+
+            pseudo_energy_stack.push_back((int)roundf(temp_after_mb_shape * 100.));
+
+            assert(pseudo_energy_stack.size() == i + 1 );
+
+            // cout<<"pseudo energy "<<i<<' '<<SHAPE_data[i]<<' '<<temp_after_mb_shape<<' '<<pseudo_energy_stack[i]<<' '<<pseudo_energy_stack.size()<<endl;
+
+        }
+    }
+
+
+
 }
 
 int main(int argc, char** argv){
@@ -558,6 +612,12 @@ int main(int argc, char** argv){
     bool ThreshKnot = false;
     string ThresKnot_prefix;
 
+
+    // SHAPE
+    string shape_file_path = "";
+
+
+
     if (argc > 1) {
         beamsize = atoi(argv[1]);
         sharpturn = atoi(argv[2]) == 1;
@@ -574,7 +634,9 @@ int main(int argc, char** argv){
         ThresKnot_prefix = argv[13];
         MEA_prefix = argv[14];
         MEA_bpseq = atoi(argv[15]) == 1;
+        shape_file_path = argv[16];
     }
+
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
 
@@ -626,7 +688,7 @@ int main(int argc, char** argv){
         replace(seq.begin(), seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index, shape_file_path);
 
         // BeamCKYParser::DecoderResult result = parser.parse(seq);
         parser.parse(seq);

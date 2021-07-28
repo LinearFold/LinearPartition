@@ -111,6 +111,14 @@ set ThreshKnot threshknot, (DEFAULT=0.3)
 ```
 output ThreshKnot structure(s) to file(s) with user specified prefix name (default False)
 
+```
+--shape <filename>
+```
+use SHAPE reactivity data to guide partition calculation (for -V mode only)  
+Please refer to this link for the SHAPE data format:
+https://rna.urmc.rochester.edu/Text/File_Formats.html#SHAPE
+
+
 ## To Visualize 
 LinearPartition provides two ways to visualize base pairing probabilities, circular plot and heatmap plot.
 
@@ -233,6 +241,13 @@ GUUGUUAUAGCAUAAGAAGUGCAUUUGUUUUAAGCGUAAAAGAUAUGGGACAACUCCA
 57 C 0
 58 A 0
 ```
+
+## Example Run LinearPartition with SHAPE data
+```
+echo GCCUGGUGACCAUAGCGAGUCGGUACCACCCCUUCCCAUCCCGAACAGGACCGUGAAACGACUCCGCGCCGAUGAUAGUGCGGAUUCCCGUGUGAAAGUAGGUCAUCGCCAGGC | ./linearpartition -V --shape example.shape
+Free Energy of Ensemble: -67.82 kcal/mol
+```
+
 
 ## Example: Draw Circular Plot
 ```

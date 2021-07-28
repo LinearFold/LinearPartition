@@ -27,6 +27,8 @@ def setgflags():
     flags.DEFINE_float('threshold', 0.3, "set ThreshKnot threshold (DEFAULT=0.3)")
     flags.DEFINE_string('threshknot_prefix', '', "output ThreshKnot structure(s) to file(s) in bpseq format with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
 
+    # SHAPE file
+    flags.DEFINE_string('shape', '', "import SHAPE data for SHAPE guided LinearPartition") # SHAPE
 
     argv = FLAGS(sys.argv)
 
@@ -48,6 +50,12 @@ def main():
     TK = '1' if FLAGS.threshknot else '0'
     threshold = str(FLAGS.threshold)
     ThreshKnot_prefix = str(FLAGS.threshknot_prefix) + "_" if FLAGS.threshknot_prefix else ''
+
+
+    # SHAPE
+    shape_file_path = str(FLAGS.shape) 
+
+
 
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
@@ -88,7 +96,7 @@ def main():
 
 
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, TK, threshold, ThreshKnot_prefix, MEA_prefix, MEA_bpseq]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, TK, threshold, ThreshKnot_prefix, MEA_prefix, MEA_bpseq, shape_file_path]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':

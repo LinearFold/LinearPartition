@@ -382,6 +382,13 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
 #ifdef lpv
                                 newscore = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
                                                              nuci_1, nuci, nucj, nucj1);
+                                // SHAPE for Vienna only
+                                if (use_shape)
+                                {
+                                    newscore += -(pseudo_energy_stack[p] + pseudo_energy_stack[i] + pseudo_energy_stack[j] + pseudo_energy_stack[q]);
+                                }
+
+
                                 Fast_LogPlusEquals(state.beta, bestP[q][p].beta + newscore/kT);
 #else
                                 newscore = score_helix(nucp, nucp1, nucq_1, nucq);

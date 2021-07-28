@@ -93,6 +93,11 @@ public:
     // string threshknot_file;
     string threshknot_file_index;
 
+    // SHAPE
+    bool use_shape = false;
+    double m = 1.8;
+    double b = -0.6;
+
 
     BeamCKYParser(int beam_size=100,
                   bool nosharpturn=true,
@@ -108,7 +113,8 @@ public:
                   bool bpseq=false,
                   bool threshknot_=false,
                   float threshknot_threshold=0.3,
-                  string threshknot_file_index="");
+                  string threshknot_file_index="",
+                  string shape_file_path="");
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);
@@ -153,6 +159,13 @@ private:
 
     void output_to_file(string file_name, const char * type);
     void output_to_file_MEA_threshknot_bpseq(string file_name, const char * type, map<int,int> & pairs, string & seq);
+
+
+
+    // SHAPE
+    std::vector<double> SHAPE_data;
+
+    std::vector<int> pseudo_energy_stack;
 
 };
 
