@@ -114,7 +114,7 @@ output ThreshKnot structure(s) to file(s) with user specified prefix name (defau
 ```
 --shape <filename>
 ```
-use SHAPE reactivity data to guide partition calculation (for -V mode only)  
+use SHAPE reactivity data (for -V mode only)  
 Please refer to this link for the SHAPE data format:
 https://rna.urmc.rochester.edu/Text/File_Formats.html#SHAPE
 
