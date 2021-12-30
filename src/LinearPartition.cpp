@@ -69,7 +69,6 @@ pf_type BeamCKYParser::beam_prune(std::unordered_map<int, State> &beamstep) {
     return threshold;
 }
 
-
 void BeamCKYParser::prepare(unsigned len) {
     seq_length = len;
 
@@ -291,16 +290,11 @@ void BeamCKYParser::parse(string& seq) {
 
                                 // SHAPE for Vienna only
                                 if (use_shape)
-                                {
                                     newscore += -(pseudo_energy_stack[p] + pseudo_energy_stack[i] + pseudo_energy_stack[j] + pseudo_energy_stack[q]);
-                                }
-
-
                                 Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
 #else
                                 newscore = score_helix(nucp, nucp1, nucq_1, nucq);
                                 Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore);
-
 #endif
                             } else {
                                 // single branch
@@ -447,8 +441,6 @@ void BeamCKYParser::parse(string& seq) {
     gettimeofday(&parse_endtime, NULL);
     double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
 
-    // unsigned long nos_tot = nos_H + nos_P + nos_M2 + nos_Multi + nos_M + nos_C;
-
 #ifdef lpv
     fprintf(stderr,"Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
 #else
@@ -560,9 +552,6 @@ BeamCKYParser::BeamCKYParser(int beam_size,
 
         // actually, we can combine the SHAPE_data and the energy_stack together
         while (!(in >> position >> data).fail()) {
-            // cout<<"position data "<< int(position)<<endl<<data<<endl;
-            // assert(int(position) == SHAPE_data.size() + 1);
-            // cout<<"data "<<data<<endl;
             if (isdigit(int(data[0])) == 0){
                 SHAPE_data.push_back(double((-1.000000)));
             }
@@ -570,8 +559,6 @@ BeamCKYParser::BeamCKYParser(int beam_size,
             else {
                 SHAPE_data.push_back(stod(data));
             }
-            
-
         }
 
         for (int i = 0; i<SHAPE_data.size(); i++){
@@ -580,14 +567,15 @@ BeamCKYParser::BeamCKYParser(int beam_size,
             pseudo_energy_stack.push_back((int)roundf(temp_after_mb_shape * 100.));
 
             assert(pseudo_energy_stack.size() == i + 1 );
-
-            // cout<<"pseudo energy "<<i<<' '<<SHAPE_data[i]<<' '<<temp_after_mb_shape<<' '<<pseudo_energy_stack[i]<<' '<<pseudo_energy_stack.size()<<endl;
-
         }
     }
+}
 
-
-
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
 }
 
 int main(int argc, char** argv){
@@ -612,11 +600,8 @@ int main(int argc, char** argv){
     bool ThreshKnot = false;
     string ThresKnot_prefix;
 
-
     // SHAPE
     string shape_file_path = "";
-
-
 
     if (argc > 1) {
         beamsize = atoi(argv[1]);
@@ -637,7 +622,6 @@ int main(int argc, char** argv){
         shape_file_path = argv[16];
     }
 
-
     if (is_verbose) printf("beam size: %d\n", beamsize);
 
     // variables for decoding
@@ -651,27 +635,38 @@ int main(int argc, char** argv){
     string ThreshKnot_file_index = "";
     string MEA_file_index = "";
 
-    for (string seq; getline(cin, seq);) {
-        if (seq.length() == 0)
+    string rna_seq;
+    vector<string> rna_seq_list, rna_name_list;
+    for (string seq; getline(cin, seq);){
+        if (seq.empty()) continue;
+        else if (seq[0] == '>' or seq[0] == ';'){
+            rna_name_list.push_back(seq); // sequence name
+            if (!rna_seq.empty())
+                rna_seq_list.push_back(rna_seq);
+            rna_seq.clear();
             continue;
-
-        if (seq[0] == ';' || seq[0] == '>') {
-            printf("%s\n", seq.c_str());
-            if (!bpp_file.empty()) {
-                FILE *fptr = fopen(bpp_file.c_str(), "a"); 
-                if (fptr == NULL) { 
-                    printf("Could not open file!\n"); 
-                    return 0; 
-                }
-                fprintf(fptr, "%s\n", seq.c_str());
-                fclose(fptr); 
-            }
-            continue;
+        }else{
+            rtrim(seq);
+            rna_seq += seq;
         }
+    }
+    if (!rna_seq.empty())
+        rna_seq_list.push_back(rna_seq);
 
-        if (!isalpha(seq[0])){
-            printf("Unrecognized sequence: %s\n", seq.c_str());
-            continue;
+    for(int i = 0; i < rna_seq_list.size(); i++){
+        if (rna_name_list.size() > i)
+            printf("%s\n", rna_name_list[i].c_str());
+        rna_seq = rna_seq_list[i];
+
+        printf("%s\n", rna_seq.c_str());
+        if (!bpp_file.empty()) {
+            FILE *fptr = fopen(bpp_file.c_str(), "a"); 
+            if (fptr == NULL) { 
+                printf("Could not open file!\n"); 
+                return 0; 
+            }
+            fprintf(fptr, "%s\n", rna_name_list[i].c_str());
+            fclose(fptr); 
         }
 
         seq_index ++;
@@ -682,16 +677,15 @@ int main(int argc, char** argv){
         if (!MEA_prefix.empty()) MEA_file_index = MEA_prefix + to_string(seq_index);
         
         // convert to uppercase
-        transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
+        transform(rna_seq.begin(), rna_seq.end(), rna_seq.begin(), ::toupper);
 
         // convert T to U
-        replace(seq.begin(), seq.end(), 'T', 'U');
+        replace(rna_seq.begin(), rna_seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
         BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index, shape_file_path);
 
-        // BeamCKYParser::DecoderResult result = parser.parse(seq);
-        parser.parse(seq);
+        parser.parse(rna_seq);
     }
 
     gettimeofday(&total_endtime, NULL);
