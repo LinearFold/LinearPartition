@@ -513,7 +513,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              bool ThreshKnot,
                              float ThreshKnot_threshold,
                              string ThreshKnot_file_index,
-                             string shape_file_path)
+                             string shape_file_path,
+                             bool fasta)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
@@ -528,7 +529,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       bpseq(MEA_bpseq),
       threshknot_(ThreshKnot),
       threshknot_threshold(ThreshKnot_threshold),
-      threshknot_file_index(ThreshKnot_file_index){
+      threshknot_file_index(ThreshKnot_file_index),
+      is_fasta(fasta){
 #ifdef lpv
         initialize();
 #else
@@ -599,6 +601,7 @@ int main(int argc, char** argv){
     float ThreshKnot_threshold = 0.3;
     bool ThreshKnot = false;
     string ThresKnot_prefix;
+    bool fasta = false; 
 
     // SHAPE
     string shape_file_path = "";
@@ -620,6 +623,7 @@ int main(int argc, char** argv){
         MEA_prefix = argv[14];
         MEA_bpseq = atoi(argv[15]) == 1;
         shape_file_path = argv[16];
+        fasta = atoi(argv[17]) == 1;
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -637,21 +641,32 @@ int main(int argc, char** argv){
 
     string rna_seq;
     vector<string> rna_seq_list, rna_name_list;
-    for (string seq; getline(cin, seq);){
-        if (seq.empty()) continue;
-        else if (seq[0] == '>' or seq[0] == ';'){
-            rna_name_list.push_back(seq); // sequence name
-            if (!rna_seq.empty())
-                rna_seq_list.push_back(rna_seq);
-            rna_seq.clear();
-            continue;
-        }else{
-            rtrim(seq);
-            rna_seq += seq;
+    if (fasta){
+        for (string seq; getline(cin, seq);){
+            if (seq.empty()) continue;
+            else if (seq[0] == '>' or seq[0] == ';'){
+                rna_name_list.push_back(seq); // sequence name
+                if (!rna_seq.empty())
+                    rna_seq_list.push_back(rna_seq);
+                rna_seq.clear();
+                continue;
+            }else{
+                rtrim(seq);
+                rna_seq += seq;
+            }
+        }
+        if (!rna_seq.empty())
+            rna_seq_list.push_back(rna_seq);
+    }else{
+        for (string seq; getline(cin, seq);){
+            if (seq.empty()) continue;
+            if (!isalpha(seq[0])){
+                printf("Unrecognized sequence: %s\n", seq.c_str());
+                continue;
+            }
+            rna_seq_list.push_back(seq);
         }
     }
-    if (!rna_seq.empty())
-        rna_seq_list.push_back(rna_seq);
 
     for(int i = 0; i < rna_seq_list.size(); i++){
         if (rna_name_list.size() > i)

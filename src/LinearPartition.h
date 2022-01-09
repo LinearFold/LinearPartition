@@ -85,13 +85,12 @@ public:
     string forest_file;
     bool mea_;
     float gamma;
-    // string MEA_file;
     string mea_file_index;
     bool bpseq;
     bool threshknot_;
     float threshknot_threshold;
-    // string threshknot_file;
     string threshknot_file_index;
+    bool is_fasta;
 
     // SHAPE
     bool use_shape = false;
@@ -114,7 +113,8 @@ public:
                   bool threshknot_=false,
                   float threshknot_threshold=0.3,
                   string threshknot_file_index="",
-                  string shape_file_path="");
+                  string shape_file_path="",
+                  bool is_fasta=false);
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);

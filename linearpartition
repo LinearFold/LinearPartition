@@ -8,28 +8,25 @@ import os
 FLAGS = flags.FLAGS
 
 def setgflags():
-    flags.DEFINE_integer('beam', 100, "set beam size, (DEFAULT=100)", short_name='b')
-    flags.DEFINE_boolean('V', False, "use vienna parameters, (DEFAULT=FALSE)")
-    flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
-    flags.DEFINE_boolean('verbose', False, "print out beamsize, Log Partition Coefficient (default mode) or free energy of ensumble (-V mode) and runtime information, (DEFAULT=FALSE)")
-    flags.DEFINE_string('output', '', "output base pairing probability matrix to a file with user specified name, (DEFAULT=FALSE)", short_name="o") # output mode
-    flags.DEFINE_string('prefix', '', "output base pairing probability matrices to file(s) with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
-    flags.DEFINE_boolean('part', False, "only do partition function calculation, (DEFAULT=FALSE)", short_name='p') # adding partition function mode
-    flags.DEFINE_string('r', '', "output base pairing probability matrix to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
-    flags.DEFINE_float('c', None, "only output base pair probability bigger than user specified threshold between 0 and 1 (DEFAULT=0.0)") # bpp cutoff
+    flags.DEFINE_integer('beamsize', 100, "set beam size", short_name='b')
+    flags.DEFINE_boolean('Vienna', False, "use vienna parameters", short_name='V')
+    flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction")
+    flags.DEFINE_boolean('verbose', False, "print out beamsize, Log Partition Coefficient (default mode) or free energy of ensumble (-V mode) and runtime information")
+    flags.DEFINE_string('output', '', "output base pairing probability matrix to a file with user specified name", short_name="o") # output mode
+    flags.DEFINE_string('prefix', '', "output base pairing probability matrices to file(s) with user specified prefix name") # prefix of file name
+    flags.DEFINE_boolean('part', False, "only do partition function calculation", short_name='p') # adding partition function mode
+    flags.DEFINE_string('rewrite', '', "output base pairing probability matrix to a file with user specified name (rewrite if the file exists)", short_name='r') # output (rewrite) mode
+    flags.DEFINE_float('cutoff', None, "only output base pair probability bigger than user specified threshold between 0 and 1", short_name='c') # bpp cutoff
     flags.DEFINE_string("dumpforest", "", "dump forest (all nodes with inside [and outside] log partition functions but no hyperedges) for downstream tasks such as sampling and accessibility (DEFAULT=None)", short_name="f") # output (rewrite) mode
     flags.DEFINE_boolean('mea', False, "get MEA structure", short_name='M') 
-    flags.DEFINE_float('gamma', 3., "set MEA gamma, (DEFAULT=3.0)", short_name='g')
-    # flags.DEFINE_string('mea_output', '', "output MEA structure to a file with user specified name (rewrite if the file exists) (DEFAULT=FALSE)") # output (rewrite) mode
-    flags.DEFINE_string('mea_prefix', '', "output MEA structure(s) to file(s) with user specified prefix name (DEFAULT=FALSE)") # output (rewrite) mode
-    flags.DEFINE_boolean('bpseq', False, "output MEA structure(s) in bpseq format instead of dot-bracket format (DEFAULT=FALSE)") # output (rewrite) mode
+    flags.DEFINE_float('gamma', 3.0, "set MEA gamma", short_name='g')
+    flags.DEFINE_string('mea_prefix', '', "output MEA structure(s) to file(s) with user specified prefix name") # output (rewrite) mode
+    flags.DEFINE_boolean('bpseq', False, "output MEA structure(s) in bpseq format instead of dot-bracket format") # output (rewrite) mode
     flags.DEFINE_boolean('threshknot', False, "get ThreshKnot structure", short_name='T') 
-    flags.DEFINE_float('threshold', 0.3, "set ThreshKnot threshold (DEFAULT=0.3)")
-    flags.DEFINE_string('threshknot_prefix', '', "output ThreshKnot structure(s) to file(s) in bpseq format with user specified prefix name (DEFAULT=FALSE)") # prefix of file name
-
-    # SHAPE file
-    flags.DEFINE_string('shape', '', "import SHAPE data for SHAPE guided LinearPartition") # SHAPE
-
+    flags.DEFINE_float('threshold', 0.3, "set ThreshKnot threshold")
+    flags.DEFINE_string('threshknot_prefix', '', "output ThreshKnot structure(s) to file(s) in bpseq format with user specified prefix name") # prefix of file name
+    flags.DEFINE_string('shape', '', "import SHAPE data for SHAPE guided LinearPartition (DEFAULT: not use SHAPE data)") # SHAPE
+    flags.DEFINE_boolean('fasta', False, "input is in fasta format") # FASTA format
     argv = FLAGS(sys.argv)
 
 def main():
@@ -46,16 +43,11 @@ def main():
     gamma = str(FLAGS.g)
     MEA_bpseq = '1' if FLAGS.bpseq else '0'
     MEA_prefix = str(FLAGS.mea_prefix) + "_" if FLAGS.mea_prefix else ''
-
     TK = '1' if FLAGS.threshknot else '0'
     threshold = str(FLAGS.threshold)
     ThreshKnot_prefix = str(FLAGS.threshknot_prefix) + "_" if FLAGS.threshknot_prefix else ''
-
-
-    # SHAPE
     shape_file_path = str(FLAGS.shape) 
-
-
+    is_fasta = '1' if FLAGS.fasta else '0'
 
     if FLAGS.p and (FLAGS.o or FLAGS.prefix):
         print("\nWARNING: -p mode has no output for base pairing probability matrix!\n");
@@ -86,17 +78,8 @@ def main():
             print("Exit!\n");
             exit();
 
-    # if FLAGS.mea_output:
-    #     MEA_output = str(FLAGS.mea_output)
-    #     if os.path.exists(MEA_output): os.remove(MEA_output)
-
-    # if FLAGS.ThreshKnot_output:
-    #     ThreshKnot_output = str(FLAGS.ThreshKnot_output)
-    #     if os.path.exists(ThreshKnot_output): os.remove(ThreshKnot_output)
-
-
     path = os.path.dirname(os.path.abspath(__file__))
-    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, TK, threshold, ThreshKnot_prefix, MEA_prefix, MEA_bpseq, shape_file_path]
+    cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, TK, threshold, ThreshKnot_prefix, MEA_prefix, MEA_bpseq, shape_file_path, is_fasta]
     subprocess.call(cmd, stdin=sys.stdin)
     
 if __name__ == '__main__':

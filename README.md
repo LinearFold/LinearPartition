@@ -35,13 +35,17 @@ Both FASTA format and pure-sequence format are supported for input.
 
 OPTIONS:
 ```
--b BEAM_SIZE
+--beamsize BEAM_SIZE or -b BEAM_SIZE 
 ```
 The beam size (default 100). Use 0 for infinite beam.
 ```
--V
+--Vienna or -V
 ```
 Switches LinearPartition-C (by default) to LinearPartition-V.
+```
+--fasta
+```
+Specify that the input is in fasta format. (default: not use SHAPE data)
 ```
 --verbose
 ```
@@ -51,11 +55,11 @@ Prints out beamsize, Log Partition Coefficient or free energy of ensemble (-V mo
 ```
 Enable sharpturn. (default False)
 ```
--o FILE_NAME
+--output FILE_NAME or -o FILE_NAME
 ```
 Outputs base pairing probability matrix to a file with user specified name. (default False)
 ```
--r FILE_NAME
+--rewrite FILE_NAME or -r FILE_NAME
 ```
 Output base pairing probability matrix to a file with user specified name (overwrite if the file exists). (default False)
 ```
@@ -63,16 +67,16 @@ Output base pairing probability matrix to a file with user specified name (overw
 ```
 Outputs base pairing probability matrices to files with user specified prefix. (default False)
 ```
--p
+--part or -p
 ```
 Partition function calculation only. (default False)
 ```
--c CUTOFF
+--cutoff CUTOFF or -c CUTOFF
 ```
-Only output base pair probability larger than user specified threshold between 0 and 1. (DEFAULT=0.0)
+Only output base pair probability larger than user specified threshold (CUTOFF) between 0 and 1. (DEFAULT=0.0)
 ```
 
---dumpforest
+--dumpforest or -f
 ```
 dump forest (all nodes with inside [and outside] log partition functions but no hyperedges) for downstream tasks such as sampling and accessibility (DEFAULT=None)
 
@@ -82,7 +86,7 @@ dump forest (all nodes with inside [and outside] log partition functions but no 
 get MEA structure, (DEFAULT=FALSE)
 
 ```
---gamma
+--gamma GAMMA or -g GAMMA
 ```
 set MEA gamma, (DEFAULT=3.0)
 
@@ -102,7 +106,7 @@ output MEA structure(s) to file(s) with user specified prefix name
 get ThreshKnot structure, (DEFAULT=FALSE)
 
 ```
---threshold
+--threshold <FILE_NAME>
 ```
 set ThreshKnot threshknot, (DEFAULT=0.3)
 
@@ -112,7 +116,7 @@ set ThreshKnot threshknot, (DEFAULT=0.3)
 output ThreshKnot structure(s) to file(s) with user specified prefix name (default False)
 
 ```
---shape <filename>
+--shape FILE_NAME
 ```
 use SHAPE reactivity data (for -V mode only)  
 Please refer to this link for the SHAPE data format:

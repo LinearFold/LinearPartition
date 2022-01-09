@@ -901,11 +901,11 @@ class FlagValues:
   # lhuang: my stealthy entry point
   def __call__(self, argv):
     try:
-			# N.B.: return the rest of the command-line! (non-flag arguments)
+      # N.B.: return the rest of the command-line! (non-flag arguments)
       return self.__call2__(argv)
     except FlagsError, e:
-	# lhuang: to 2> instead of >
-	import sys
+        # lhuang: to 2> instead of >
+        import sys
         print >> sys.stderr, 'Error: %s\nUsage: %s [flags]\n%s' % (e, list(argv)[0], FLAGS)
         sys.exit(1)
 
@@ -1105,7 +1105,7 @@ class FlagValues:
 
   def __RenderModuleFlags(self, module, flags, output_lines, prefix=""):
     """Generates a help string for a given module."""
-    output_lines.append('\n%s%s:' % (prefix, module))
+    # output_lines.append('\n%s%s:' % (prefix, module))
     self.__RenderFlagList(flags, output_lines, prefix + "  ")
 
   def __RenderOurModuleFlags(self, module, output_lines, prefix=""):
@@ -1152,8 +1152,8 @@ class FlagValues:
       flaghelp = ""
       # lhuang:
       if flag.name in ["help", "helpshort"]:
-			  continue
-			
+        continue
+      
       if flag.short_name:
         flaghelp += "-" if len(flag.short_name) == 1 else "--"  # lhuang: shortname can be long
         flaghelp += "%s," % flag.short_name
@@ -1887,15 +1887,16 @@ class HelpFlag(BooleanFlag):
   """
   def __init__(self):
     BooleanFlag.__init__(self, "help", 0, "show this help",
-                         short_name="?", allow_override=1)
+                         short_name="h", allow_override=1)
   def Parse(self, arg):
     if arg:
       doc = sys.modules["__main__"].__doc__
       flags = str(FLAGS)
-      print doc or ("\nUSAGE: %s [flags]\n" % sys.argv[0])
+      print doc or ("\nUSAGE: echo SEQUENCE | %s [flags]\n       or\n       echo FASTA_FILE | %s [flags]\n" % (sys.argv[0], sys.argv[0]))
       if flags:
         print "flags:"
         print flags
+        print ""
       sys.exit(1)
 
 
