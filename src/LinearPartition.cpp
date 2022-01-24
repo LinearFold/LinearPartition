@@ -660,6 +660,7 @@ int main(int argc, char** argv){
     }else{
         for (string seq; getline(cin, seq);){
             if (seq.empty()) continue;
+            if (seq[0] == '>' or seq[0] == ';') continue;
             if (!isalpha(seq[0])){
                 printf("Unrecognized sequence: %s\n", seq.c_str());
                 continue;
@@ -680,7 +681,8 @@ int main(int argc, char** argv){
                 printf("Could not open file!\n"); 
                 return 0; 
             }
-            fprintf(fptr, "%s\n", rna_name_list[i].c_str());
+            if (rna_name_list.size() > i)
+                fprintf(fptr, "%s\n", rna_name_list[i].c_str());
             fclose(fptr); 
         }
 
