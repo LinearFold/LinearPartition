@@ -129,8 +129,10 @@ void BeamCKYParser::parse(string& seq) {
         if(seq_length > 0) bestC[0].alpha = 0.0;
         if(seq_length > 1) bestC[1].alpha = 0.0;
 #else
-        if(seq_length > 0) Fast_LogPlusEquals(bestC[0].alpha, score_external_unpaired(0, 0));
-        if(seq_length > 1) Fast_LogPlusEquals(bestC[1].alpha, score_external_unpaired(0, 1));
+        // if(seq_length > 0) Fast_LogPlusEquals(bestC[0].alpha, score_external_unpaired(0, 0));
+        // if(seq_length > 1) Fast_LogPlusEquals(bestC[1].alpha, score_external_unpaired(0, 1));
+        if(seq_length > 0) bestC[0] + score_external_unpaired(0, 0);
+        if(seq_length > 1) bestC[1] + score_external_unpaired(0, 1);
 #endif
 
     value_type newscore;
@@ -167,10 +169,12 @@ void BeamCKYParser::parse(string& seq) {
                             tetra_hex_tri = if_triloops[j];
 #endif
                         newscore = - v_score_hairpin(j, jnext, nucj, nucj1, nucjnext_1, nucjnext, tetra_hex_tri);
-                        Fast_LogPlusEquals(bestH[jnext][j].alpha, newscore/kT);
+                        // Fast_LogPlusEquals(bestH[jnext][j].alpha, newscore/kT);
+                        bestH[jnext][j] + newscore/kT;
 #else
                         newscore = score_hairpin(j, jnext, nucj, nucj1, nucjnext_1, nucjnext);
-                        Fast_LogPlusEquals(bestH[jnext][j].alpha, newscore);
+                        // Fast_LogPlusEquals(bestH[jnext][j].alpha, newscore);
+                        bestH[jnext][j] + newscore;
 #endif
                 }
             }
@@ -202,15 +206,18 @@ void BeamCKYParser::parse(string& seq) {
                             tetra_hex_tri = if_triloops[i];
 #endif
                         newscore = - v_score_hairpin(i, jnext, nuci, nuci1, nucjnext_1, nucjnext, tetra_hex_tri);
-                        Fast_LogPlusEquals(bestH[jnext][i].alpha, newscore/kT);
+                        // Fast_LogPlusEquals(bestH[jnext][i].alpha, newscore/kT);
+                        bestH[jnext][i] + newscore/kT;
 #else
                         newscore = score_hairpin(i, jnext, nuci, nuci1, nucjnext_1, nucjnext);
-                        Fast_LogPlusEquals(bestH[jnext][i].alpha, newscore);
+                        // Fast_LogPlusEquals(bestH[jnext][i].alpha, newscore);
+                        bestH[jnext][i] + newscore;
 #endif
                     }
 
                     // 2. generate p(i, j)
-                    Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha);
+                    // Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha);
+                    beamstepP[i] + state.alpha;
                 }
             }
         }
@@ -232,10 +239,12 @@ void BeamCKYParser::parse(string& seq) {
                 {
                     if (jnext != -1) {
 #ifdef lpv
-                        Fast_LogPlusEquals(bestMulti[jnext][i].alpha, state.alpha);
+                        // Fast_LogPlusEquals(bestMulti[jnext][i].alpha, state.alpha);
+                        bestMulti[jnext][i] + state.alpha;
 #else
                         newscore = score_multi_unpaired(j, jnext - 1);
-                        Fast_LogPlusEquals(bestMulti[jnext][i].alpha, state.alpha + newscore);
+                        // Fast_LogPlusEquals(bestMulti[jnext][i].alpha, state.alpha + newscore);
+                        bestMulti[jnext][i] + (state.alpha + newscore);
 #endif
                     }
                 }
@@ -244,10 +253,12 @@ void BeamCKYParser::parse(string& seq) {
                 {
 #ifdef lpv
                     newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
-                    Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha + newscore/kT);
+                    // Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha + newscore/kT);
+                    beamstepP[i] + (state.alpha + newscore/kT);
 #else
                     newscore = score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
-                    Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha + newscore);
+                    // Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha + newscore);
+                    beamstepP[i] + (state.alpha + newscore);
 #endif
                 }
             }
@@ -291,23 +302,27 @@ void BeamCKYParser::parse(string& seq) {
                                 // SHAPE for Vienna only
                                 if (use_shape)
                                     newscore += -(pseudo_energy_stack[p] + pseudo_energy_stack[i] + pseudo_energy_stack[j] + pseudo_energy_stack[q]);
-                                Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
+                                // Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
+                                bestP[q][p] + (state.alpha + newscore/kT);
 #else
                                 newscore = score_helix(nucp, nucp1, nucq_1, nucq);
-                                Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore);
+                                // Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore);
+                                bestP[q][p] + (state.alpha + newscore);
 #endif
                             } else {
                                 // single branch
 #ifdef lpv
                                 newscore = - v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq,
                                                    nuci_1, nuci, nucj, nucj1);
-                                Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
+                                // Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore/kT);
+                                bestP[q][p] + (state.alpha + newscore/kT);
 #else
                                 newscore = score_junction_B(p, q, nucp, nucp1, nucq_1, nucq) +
                                         precomputed +
                                         score_single_without_junctionB(p, q, i, j,
                                                                        nuci_1, nuci, nucj, nucj1);
-                                Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore);
+                                // Fast_LogPlusEquals(bestP[q][p].alpha, state.alpha + newscore);
+                                bestP[q][p] + (state.alpha + newscore);
 #endif
                             }
                             q = next_pair[nucp][q];
@@ -319,10 +334,12 @@ void BeamCKYParser::parse(string& seq) {
                 if(i > 0 && j < seq_length-1){
 #ifdef lpv
                         newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha + newscore/kT);
+                        // Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha + newscore/kT);
+                        beamstepM[i] + (state.alpha + newscore/kT);
 #else
                         newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha + newscore);
+                        // Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha + newscore);
+                        beamstepM[i] + (state.alpha + newscore);
 #endif
                 }
 
@@ -339,7 +356,8 @@ void BeamCKYParser::parse(string& seq) {
                     for (auto &m : bestM[k]) {
                         int newi = m.first;
                         State& m_state = m.second;
-                        Fast_LogPlusEquals(beamstepM2[newi].alpha, m_state.alpha + m1_alpha);
+                        // Fast_LogPlusEquals(beamstepM2[newi].alpha, m_state.alpha + m1_alpha);
+                        beamstepM2[newi] + (m_state.alpha + m1_alpha);
                     }
                 }
 
@@ -353,21 +371,25 @@ void BeamCKYParser::parse(string& seq) {
 #ifdef lpv
                         newscore = - v_score_external_paired(k+1, j, nuck, nuck1,
                                                              nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepC.alpha, prefix_C.alpha + state.alpha + newscore/kT);      
+                        // Fast_LogPlusEquals(beamstepC.alpha, prefix_C.alpha + state.alpha + newscore/kT);  
+                        beamstepC + (prefix_C.alpha + state.alpha + newscore/kT);
 #else
                         newscore = score_external_paired(k+1, j, nuck, nuck1,
                                                              nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepC.alpha, prefix_C.alpha + state.alpha + newscore);
+                        // Fast_LogPlusEquals(beamstepC.alpha, prefix_C.alpha + state.alpha + newscore);
+                        beamstepC + (prefix_C.alpha + state.alpha + newscore);
 #endif
                     } else {
 #ifdef lpv
                         newscore = - v_score_external_paired(0, j, -1, nucs[0],
                                                                  nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepC.alpha, state.alpha + newscore/kT);       
+                        // Fast_LogPlusEquals(beamstepC.alpha, state.alpha + newscore/kT);
+                        beamstepC + (state.alpha + newscore/kT);
 #else
                         newscore = score_external_paired(0, j, -1, nucs[0],
                                                              nucj, nucj1, seq_length);
-                        Fast_LogPlusEquals(beamstepC.alpha, state.alpha + newscore);
+                        // Fast_LogPlusEquals(beamstepC.alpha, state.alpha + newscore);
+                        beamstepC + (state.alpha + newscore);
 #endif
                     }
                 }
@@ -388,18 +410,21 @@ void BeamCKYParser::parse(string& seq) {
                     int q = next_pair[nucp][j];
                     if (q != -1 && ((i - p - 1) <= SINGLE_MAX_LEN)) {
 #ifdef lpv
-                    Fast_LogPlusEquals(bestMulti[q][p].alpha, state.alpha);      
+                    // Fast_LogPlusEquals(bestMulti[q][p].alpha, state.alpha); 
+                    bestMulti[q][p] + state.alpha;
 
 #else
                     newscore = score_multi_unpaired(p+1, i-1) +
                                     score_multi_unpaired(j+1, q-1);
-                    Fast_LogPlusEquals(bestMulti[q][p].alpha, state.alpha + newscore);      
+                    // Fast_LogPlusEquals(bestMulti[q][p].alpha, state.alpha + newscore);
+                    bestMulti[q][p] + (state.alpha + newscore);
 #endif
                     }
                 }
 
                 // 2. M = M2
-                Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha);  
+                // Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha);  
+                beamstepM[i] + state.alpha;
             }
         }
 
@@ -412,10 +437,12 @@ void BeamCKYParser::parse(string& seq) {
                 State& state = item.second;
                 if (j < seq_length-1) {
 #ifdef lpv
-                    Fast_LogPlusEquals(bestM[j+1][i].alpha, state.alpha); 
+                    // Fast_LogPlusEquals(bestM[j+1][i].alpha, state.alpha); 
+                    bestM[j+1][i] + state.alpha;
 #else
                     newscore = score_multi_unpaired(j + 1, j + 1);
-                    Fast_LogPlusEquals(bestM[j+1][i].alpha, state.alpha + newscore); 
+                    // Fast_LogPlusEquals(bestM[j+1][i].alpha, state.alpha + newscore);
+                    bestM[j+1][i] + (state.alpha + newscore);
 #endif
                 }
             }
@@ -426,11 +453,13 @@ void BeamCKYParser::parse(string& seq) {
             // C = C + U
             if (j < seq_length-1) {
 #ifdef lpv
-                Fast_LogPlusEquals(bestC[j+1].alpha, beamstepC.alpha); 
+                // Fast_LogPlusEquals(bestC[j+1].alpha, beamstepC.alpha);
+                bestC[j+1] + beamstepC.alpha;
                     
 #else
                 newscore = score_external_unpaired(j+1, j+1);
-                Fast_LogPlusEquals(bestC[j+1].alpha, beamstepC.alpha + newscore); 
+                // Fast_LogPlusEquals(bestC[j+1].alpha, beamstepC.alpha + newscore);
+                bestC[j+1] + (beamstepC.alpha + newscore);
 #endif
             }
         }

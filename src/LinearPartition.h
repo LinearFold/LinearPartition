@@ -208,11 +208,23 @@ inline pf_type Fast_LogExpPlusOne(pf_type x){
     return ((pf_type(-0.0000113994)*x+pf_type(0.0003734731))*x+pf_type(0.9959107193))*x+pf_type(0.0149855051);
 }
 
-inline void Fast_LogPlusEquals (pf_type &x, pf_type y)
-{
-    if (x < y) std::swap (x, y);
-    if (y > pf_type(NEG_INF/2) && x-y < pf_type(11.8624794162))
-        x = Fast_LogExpPlusOne(x-y) + y;
+// inline void Fast_LogPlusEquals (pf_type &x, pf_type y)
+// {
+//     if (x < y) std::swap (x, y);
+//     if (y > pf_type(NEG_INF/2) && x-y < pf_type(11.8624794162))
+//         x = Fast_LogExpPlusOne(x-y) + y;
+// }
+
+inline void operator+ (State &state, pf_type score){
+    if (state.alpha < score) std::swap (state.alpha, score);
+    if (score > pf_type(NEG_INF/2) && state.alpha-score < pf_type(11.8624794162))
+        state.alpha = Fast_LogExpPlusOne(state.alpha-score) + score;
+}
+
+inline void operator/ (State &state, pf_type score){
+    if (state.beta < score) std::swap (state.beta, score);
+    if (score > pf_type(NEG_INF/2) && state.beta-score < pf_type(11.8624794162))
+        state.beta = Fast_LogExpPlusOne(state.beta-score) + score;
 }
 
 inline pf_type Fast_Exp(pf_type x)
