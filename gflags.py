@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (c) 2007, Google Inc.
 # All rights reserved.
@@ -316,15 +316,15 @@ except AttributeError:   # a very old python, that lacks sys.version_info
 # If we're not running at least python 2.2.1, define True, False, and bool.     
 # Thanks, Guido, for the code.                                                  
 try:
-  True, False, bool
+  True1, False0, bool
 except NameError:
-  False = 0
-  True = 1
+  False0 = 0
+  True1 = 1
   def bool(x):
     if x:
-      return True
+      return True1
     else:
-      return False
+      return False0
 
 # Are we running under pychecker?
 _RUNNING_PYCHECKER = 'pychecker.python' in sys.modules
@@ -440,7 +440,7 @@ def CutCommonSpacePrefix(text):
     space_prefix_len = len(common_prefix) - len(common_prefix.lstrip())
     # If we have a common space prefix, drop it from all lines
     if space_prefix_len:
-      for index in xrange(len(text_lines)):
+      for index in range(len(text_lines)):
         if text_lines[index]:
           text_lines[index] = text_lines[index][space_prefix_len:]
     return '\n'.join(text_first_line + text_lines)
@@ -597,7 +597,7 @@ def __GetModuleName(globals_dict):
     A string (the name of the module) or None (if the module could not
     be identified.
   """
-  for name, module in sys.modules.iteritems():
+  for name, module in sys.modules.items():
     if getattr(module, '__dict__', None) is globals_dict:
       if name == '__main__':
         return sys.argv[0]
@@ -756,7 +756,7 @@ class FlagValues:
     Args:
       flag_values: registry to copy from
     """
-    for flag_name, flag in flag_values.FlagDict().iteritems():
+    for flag_name, flag in flag_values.FlagDict().items():
       # Each flags with shortname appears here twice (once under its
       # normal name, and again with its short name).  To prevent
       # problems (DuplicateFlagError) with double flag registration, we
@@ -776,12 +776,12 @@ class FlagValues:
       raise FlagsError("Flag name cannot be empty")
     # If running under pychecker, duplicate keys are likely to be
     # defined.  Disable check for duplicate keys when pycheck'ing.
-    if (fl.has_key(name) and not flag.allow_override and
+    if (name in fl and not flag.allow_override and
         not fl[name].allow_override and not _RUNNING_PYCHECKER):
       raise DuplicateFlagError(name, self)
     short_name = flag.short_name
     if short_name is not None:
-      if (fl.has_key(short_name) and not flag.allow_override and
+      if (short_name in fl and not flag.allow_override and
           not fl[short_name].allow_override and not _RUNNING_PYCHECKER):
         raise DuplicateFlagError(short_name, self)
       fl[short_name] = flag
@@ -796,7 +796,7 @@ class FlagValues:
   def __getattr__(self, name):
     """Retrieves the 'value' attribute of the flag --name."""
     fl = self.FlagDict()
-    if not fl.has_key(name):
+    if name not in fl:
       raise AttributeError(name)
     return fl[name].value
 
@@ -876,7 +876,7 @@ class FlagValues:
         flags.
       flag_obj: A flag object.
     """
-    for unused_module, flags_in_module in flags_by_module_dict.iteritems():
+    for unused_module, flags_in_module in flags_by_module_dict.items():
       # while (as opposed to if) takes care of multiple occurences of a
       # flag in the list for the same module.
       while flag_obj in flags_in_module:
@@ -885,7 +885,7 @@ class FlagValues:
   def SetDefault(self, name, value):
     """Changes the default value of the named flag object."""
     fl = self.FlagDict()
-    if not fl.has_key(name):
+    if name not in fl:
       raise AttributeError(name)
     fl[name].SetDefault(value)
 
@@ -896,17 +896,17 @@ class FlagValues:
   has_key = __contains__  # a synonym for __contains__()
 
   def __iter__(self):
-    return self.FlagDict().iterkeys()
+    return iter(self.FlagDict().keys())
 
   # lhuang: my stealthy entry point
   def __call__(self, argv):
     try:
       # N.B.: return the rest of the command-line! (non-flag arguments)
       return self.__call2__(argv)
-    except FlagsError, e:
+    except FlagsError as e:
         # lhuang: to 2> instead of >
         import sys
-        print >> sys.stderr, 'Error: %s\nUsage: %s [flags]\n%s' % (e, list(argv)[0], FLAGS)
+        print('Error: %s\nUsage: %s [flags]\n%s' % (e, list(argv)[0], FLAGS), file=sys.stderr)
         sys.exit(1)
 
 
@@ -947,7 +947,7 @@ class FlagValues:
     # full forms: --mybool=(true|false).
     original_argv = list(argv)  # list() makes a copy
     shortest_matches = None
-    for name, flag in fl.items():
+    for name, flag in list(fl.items()):
       if not flag.boolean:
         continue
       if shortest_matches is None:
@@ -971,7 +971,7 @@ class FlagValues:
     # specified as a string of letters, each letter followed by a colon
     # if it takes an argument.  Long options are stored in an array of
     # strings.  Each string ends with an '=' if it takes an argument.
-    for name, flag in fl.items():
+    for name, flag in list(fl.items()):
       longopts.append(name + "=")
       if len(name) == 1:  # one-letter option: allow short flag type also
         shortopts += name
@@ -989,7 +989,7 @@ class FlagValues:
       try:
         optlist, unparsed_args = getopt.gnu_getopt(args, shortopts, longopts)
         break
-      except getopt.GetoptError, e:
+      except getopt.GetoptError as e:
         if not e.opt or e.opt in fl:
           # Not an unrecognized option, reraise the exception as a FlagsError
           raise FlagsError(e)
@@ -1030,7 +1030,7 @@ class FlagValues:
         # short option
         name = name[1:]
         short_option = 1
-      if fl.has_key(name):
+      if name in fl:
         flag = fl[name]
         if flag.boolean and short_option: arg = 1
         flag.Parse(arg)
@@ -1051,12 +1051,12 @@ class FlagValues:
 
   def Reset(self):
     """Resets the values to the point before FLAGS(argv) was called."""
-    for f in self.FlagDict().values():
+    for f in list(self.FlagDict().values()):
       f.Unparse()
 
   def RegisteredFlags(self):
     """Returns: a list of the names and short names of all registered flags."""
-    return self.FlagDict().keys()
+    return list(self.FlagDict().keys())
 
   def FlagValuesDict(self):
     """Returns: a dictionary that maps flag names to flag values."""
@@ -1079,7 +1079,7 @@ class FlagValues:
     flags_by_module = self.FlagsByModuleDict()
     if flags_by_module:
 
-      modules = flags_by_module.keys()
+      modules = list(flags_by_module.keys())
       modules.sort()
 
       # Print the help for the main module first, if possible.
@@ -1092,13 +1092,13 @@ class FlagValues:
         self.__RenderOurModuleFlags(module, helplist)
 
       self.__RenderModuleFlags('gflags',
-                               _SPECIAL_FLAGS.FlagDict().values(),
+                               list(_SPECIAL_FLAGS.FlagDict().values()),
                                helplist)
 
     else:
       # Just print one long list of flags.
       self.__RenderFlagList(
-          self.FlagDict().values() + _SPECIAL_FLAGS.FlagDict().values(),
+          list(self.FlagDict().values()) + list(_SPECIAL_FLAGS.FlagDict().values()),
           helplist, prefix)
 
     return '\n'.join(helplist)
@@ -1147,7 +1147,7 @@ class FlagValues:
         # a different flag is using this name now
         continue
       # only print help once
-      if flagset.has_key(flag): continue
+      if flag in flagset: continue
       flagset[flag] = 1
       flaghelp = ""
       # lhuang:
@@ -1194,7 +1194,7 @@ class FlagValues:
     """Returns: dictionary; maps flag names to their shortest unique prefix."""
     # Sort the list of flag names
     sorted_flags = []
-    for name, flag in fl.items():
+    for name, flag in list(fl.items()):
       sorted_flags.append(name)
       if flag.boolean:
         sorted_flags.append('no%s' % name)
@@ -1276,9 +1276,9 @@ class FlagValues:
     flag_line_list = []  # Subset of lines w/o comments, blanks, flagfile= tags.
     try:
       file_obj = open(filename, 'r')
-    except IOError, e_msg:
-      print e_msg
-      print 'ERROR:: Unable to open flagfile: %s' % (filename)
+    except IOError as e_msg:
+      print(e_msg)
+      print('ERROR:: Unable to open flagfile: %s' % (filename))
       return flag_line_list
 
     line_list = file_obj.readlines()
@@ -1302,8 +1302,8 @@ class FlagValues:
                                                    parsed_file_list)
           flag_line_list.extend(included_flags)
         else:  # Case of hitting a circularly included file.
-          print >>sys.stderr, ('Warning: Hit circular flagfile dependency: %s'
-                               % sub_filename)
+          print(('Warning: Hit circular flagfile dependency: %s'
+                               % sub_filename), file=sys.stderr)
       else:
         # Any line that's not a comment or a nested flagfile should get
         # copied into 2nd position.  This leaves earlier arguements
@@ -1376,7 +1376,7 @@ class FlagValues:
     CommandlineFlagsIntoString from google3/base/commandlineflags.cc.
     """
     s = ''
-    for flag in self.FlagDict().values():
+    for flag in list(self.FlagDict().values()):
       if flag.value is not None:
         s += flag.Serialize() + '\n'
     return s
@@ -1543,7 +1543,7 @@ class Flag:
   def Parse(self, argument):
     try:
       self.value = self.parser.Parse(argument)
-    except ValueError, e:  # recast ValueError as IllegalFlagValue
+    except ValueError as e:  # recast ValueError as IllegalFlagValue
       raise IllegalFlagValue("flag --%s: %s" % (self.name, e))
     self.present += 1
 
@@ -1892,11 +1892,11 @@ class HelpFlag(BooleanFlag):
     if arg:
       doc = sys.modules["__main__"].__doc__
       flags = str(FLAGS)
-      print doc or ("\nUSAGE: echo SEQUENCE | %s [flags]\n       or\n       echo FASTA_FILE | %s [flags]\n" % (sys.argv[0], sys.argv[0]))
+      print(doc or ("\nUSAGE: echo SEQUENCE | %s [flags]\n       or\n       echo FASTA_FILE | %s [flags]\n" % (sys.argv[0], sys.argv[0])))
       if flags:
-        print "flags:"
-        print flags
-        print ""
+        print("flags:")
+        print(flags)
+        print("")
       sys.exit(1)
 
 
@@ -1929,10 +1929,10 @@ class HelpshortFlag(BooleanFlag):
     if arg:
       doc = sys.modules["__main__"].__doc__
       flags = FLAGS.MainModuleHelp()
-      print doc or ("\nUSAGE: %s [flags]\n" % sys.argv[0])
+      print(doc or ("\nUSAGE: %s [flags]\n" % sys.argv[0]))
       if flags:
-        print "flags:"
-        print flags
+        print("flags:")
+        print(flags)
       sys.exit(1)
 
 
@@ -2025,13 +2025,13 @@ class IntegerParser(FloatParser):
         return int(argument, base)
       # ValueError is thrown when argument is a string, and overflows an int.
       except ValueError:
-        return long(argument, base)
+        return int(argument, base)
     else:
       try:
         return int(argument)
       # OverflowError is thrown when argument is numeric, and overflows an int.
       except OverflowError:
-        return long(argument)
+        return int(argument)
 
   def Type(self):
     return 'int'
