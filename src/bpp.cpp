@@ -415,7 +415,7 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 // 2. M = P
                 if(i > 0 && j < seq_length-1){
 #ifdef lpv
-                        newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+                        newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length, dangle_mode);
                         Fast_LogPlusEquals(state.beta, beamstepM[i].beta + newscore/kT);
 #else
                         newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
@@ -427,7 +427,7 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 int k = i - 1;
                 if ( k > 0 && !bestM[k].empty()) {
 #ifdef lpv
-                    newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+                    newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length, dangle_mode);
                     pf_type m1_alpha = newscore/kT;
 #else
                     newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
@@ -450,7 +450,7 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                         int nuck1 = nuci;
 #ifdef lpv
                         newscore = - v_score_external_paired(k+1, j, nuck, nuck1,
-                                                                 nucj, nucj1, seq_length);
+                                                                 nucj, nucj1, seq_length, dangle_mode);
                         pf_type external_paired_alpha_plus_beamstepC_beta = beamstepC.beta + newscore/kT;
 
 #else
@@ -463,7 +463,7 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                         // value_type newscore;
 #ifdef lpv
                         newscore = - v_score_external_paired(0, j, -1, nucs[0],
-                                                                 nucj, nucj1, seq_length);
+                                                                 nucj, nucj1, seq_length, dangle_mode);
                         Fast_LogPlusEquals(state.beta, (beamstepC.beta + newscore/kT));
 #else
                         newscore = score_external_paired(0, j, -1, nucs[0],
@@ -500,7 +500,7 @@ void BeamCKYParser::outside(vector<int> next_pair[]){
                 // 2. generate P (i, j)
                 {
 #ifdef lpv
-                    newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
+                    newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length, dangle_mode);
                     Fast_LogPlusEquals(state.beta, beamstepP[i].beta + newscore/kT);
 #else
                     newscore = score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);

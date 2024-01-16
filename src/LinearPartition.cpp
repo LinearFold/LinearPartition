@@ -243,7 +243,7 @@ void BeamCKYParser::parse(string& seq) {
                 // 2. generate P (i, j)
                 {
 #ifdef lpv
-                    newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
+		  newscore = - v_score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length, dangle_mode);
                     Fast_LogPlusEquals(beamstepP[i].alpha, state.alpha + newscore/kT);
 #else
                     newscore = score_multi(i, j, nuci, nuci1, nucs[j-1], nucj, seq_length);
@@ -318,7 +318,7 @@ void BeamCKYParser::parse(string& seq) {
                 // 2. M = P
                 if(i > 0 && j < seq_length-1){
 #ifdef lpv
-                        newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+		  newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length, dangle_mode);
                         Fast_LogPlusEquals(beamstepM[i].alpha, state.alpha + newscore/kT);
 #else
                         newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
@@ -330,7 +330,7 @@ void BeamCKYParser::parse(string& seq) {
                 int k = i - 1;
                 if ( k > 0 && !bestM[k].empty()) {
 #ifdef lpv
-                    newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
+		  newscore = - v_score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length, dangle_mode);
                     pf_type m1_alpha = state.alpha + newscore/kT;
 #else
                     newscore = score_M1(i, j, j, nuci_1, nuci, nucj, nucj1, seq_length);
@@ -352,7 +352,7 @@ void BeamCKYParser::parse(string& seq) {
                         int nuck1 = nuci;
 #ifdef lpv
                         newscore = - v_score_external_paired(k+1, j, nuck, nuck1,
-                                                             nucj, nucj1, seq_length);
+                                                             nucj, nucj1, seq_length, dangle_mode);
                         Fast_LogPlusEquals(beamstepC.alpha, prefix_C.alpha + state.alpha + newscore/kT);      
 #else
                         newscore = score_external_paired(k+1, j, nuck, nuck1,
@@ -362,7 +362,7 @@ void BeamCKYParser::parse(string& seq) {
                     } else {
 #ifdef lpv
                         newscore = - v_score_external_paired(0, j, -1, nucs[0],
-                                                                 nucj, nucj1, seq_length);
+							     nucj, nucj1, seq_length, dangle_mode);
                         Fast_LogPlusEquals(beamstepC.alpha, state.alpha + newscore/kT);       
 #else
                         newscore = score_external_paired(0, j, -1, nucs[0],
@@ -514,7 +514,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
                              float ThreshKnot_threshold,
                              string ThreshKnot_file_index,
                              string shape_file_path,
-                             bool fasta)
+                             bool fasta,
+			                 int dangles)
     : beam(beam_size), 
       no_sharp_turn(nosharpturn), 
       is_verbose(verbose),
@@ -530,7 +531,8 @@ BeamCKYParser::BeamCKYParser(int beam_size,
       threshknot_(ThreshKnot),
       threshknot_threshold(ThreshKnot_threshold),
       threshknot_file_index(ThreshKnot_file_index),
-      is_fasta(fasta){
+      is_fasta(fasta),
+      dangle_mode(dangles) {
 #ifdef lpv
         initialize();
 #else
@@ -601,7 +603,8 @@ int main(int argc, char** argv){
     float ThreshKnot_threshold = 0.3;
     bool ThreshKnot = false;
     string ThresKnot_prefix;
-    bool fasta = false; 
+    bool fasta = false;
+    int dangles = 2;
 
     // SHAPE
     string shape_file_path = "";
@@ -624,6 +627,7 @@ int main(int argc, char** argv){
         MEA_bpseq = atoi(argv[15]) == 1;
         shape_file_path = argv[16];
         fasta = atoi(argv[17]) == 1;
+	    dangles = atoi(argv[18]);
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -700,7 +704,7 @@ int main(int argc, char** argv){
         replace(rna_seq.begin(), rna_seq.end(), 'T', 'U');
 
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
-        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index, shape_file_path);
+        BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index, shape_file_path, fasta, dangles);
 
         parser.parse(rna_seq);
     }

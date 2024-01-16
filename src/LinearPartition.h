@@ -91,6 +91,7 @@ public:
     float threshknot_threshold;
     string threshknot_file_index;
     bool is_fasta;
+  int dangle_mode;
 
     // SHAPE
     bool use_shape = false;
@@ -114,7 +115,8 @@ public:
                   float threshknot_threshold=0.3,
                   string threshknot_file_index="",
                   string shape_file_path="",
-                  bool is_fasta=false);
+                  bool is_fasta=false,
+		          int dangles=1);
 
     // DecoderResult parse(string& seq);
     void parse(string& seq);
