@@ -28,7 +28,7 @@ void BeamCKYParser::output_to_file(string file_name, const char * type) {
                 pair<int, int> key = make_pair(i,j);
                 auto got = Pij.find(key);
                 if (got != Pij.end()){
-                    fprintf(fptr, "%d %d %.4e\n", i, j, got->second);
+                    fprintf(fptr, "%d %d %.5f\n", i, j, got->second); // lhuang: %.4e->%.5f
                 }
             }
         }
