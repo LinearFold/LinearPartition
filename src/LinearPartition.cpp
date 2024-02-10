@@ -442,7 +442,7 @@ void BeamCKYParser::parse(string& seq) {
     double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
 
 #ifdef lpv
-    fprintf(stderr,"Free Energy of Ensemble: %.2f kcal/mol\n", -kT * viterbi.alpha / 100.0);
+    fprintf(stderr,"Free Energy of Ensemble: %.5f kcal/mol\n", -kT * viterbi.alpha / 100.0);
 #else
     fprintf(stderr,"Log Partition Coefficient: %.5f\n", viterbi.alpha);
 #endif
