@@ -122,6 +122,11 @@ use SHAPE reactivity data (for -V mode only)
 Please refer to this link for the SHAPE data format:
 https://rna.urmc.rochester.edu/Text/File_Formats.html#SHAPE
 
+```
+--evaly y
+prints p(y | x) and -kT log Q(x)
+```
+
 
 ## To Visualize 
 LinearPartition provides two ways to visualize base pairing probabilities, circular plot and heatmap plot.
