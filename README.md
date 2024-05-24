@@ -124,8 +124,15 @@ https://rna.urmc.rochester.edu/Text/File_Formats.html#SHAPE
 
 ```
 --evaly y
-prints p(y | x) and -kT log Q(x)
 ```
+prints p(y | x) and -kT log Q(x), e.g.,
+```
+$ echo -ne "CCCAAAGGG" | ./linearpartition -V --evaly "(((...)))"
+CCCAAAGGG
+Free Energy of Ensemble: -1.41344 kcal/mol
+x= CCCAAAGGG	y= (((...)))	DeltaG(x,y)= -1.20	-kTlogQ(x)= -1.41344	p(y|x)= 0.70729
+```
+Note that this mode can be used in batch mode where you evaluate `p(y|x)` for many `x` sequences and a particular `y` structure.
 
 
 ## To Visualize 
