@@ -25,6 +25,8 @@
 #include "Utils/utility_v.h"
 #include "bpp.cpp"
 
+#include "LinearFoldEval.h" // for p(y|x)
+
 #define SPECIAL_HP
 
 using namespace std;
@@ -95,7 +97,7 @@ void BeamCKYParser::postprocess() {
     delete[] nucs;  
 }
 
-void BeamCKYParser::parse(string& seq) {
+double BeamCKYParser::parse(string& seq) {
       
     struct timeval parse_starttime, parse_endtime;
 
@@ -441,10 +443,13 @@ void BeamCKYParser::parse(string& seq) {
     gettimeofday(&parse_endtime, NULL);
     double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
 
+    double ensemble; 
 #ifdef lpv
-    fprintf(stderr,"Free Energy of Ensemble: %.5f kcal/mol\n", -kT * viterbi.alpha / 100.0);
+    ensemble = -kT * viterbi.alpha / 100.0; // -kT log(Q(x))
+    fprintf(stderr,"Free Energy of Ensemble: %.5f kcal/mol\n", ensemble);
 #else
-    fprintf(stderr,"Log Partition Coefficient: %.5f\n", viterbi.alpha);
+    ensemble = viterbi.alpha;
+    fprintf(stderr,"Log Partition Coefficient: %.5f\n", ensemble);
 #endif
 
     if(is_verbose) fprintf(stderr,"Partition Function Calculation Time: %.2f seconds.\n", parse_elapsed_time);
@@ -465,7 +470,7 @@ void BeamCKYParser::parse(string& seq) {
         if (threshknot_) ThreshKnot(seq);
     }
     postprocess();
-    return;
+    return ensemble;
 }
 
 void BeamCKYParser::print_states(FILE *fptr, unordered_map<int, State>& states, int j, string label, bool inside_only, double threshold) {    
@@ -605,6 +610,7 @@ int main(int argc, char** argv){
     string ThresKnot_prefix;
     bool fasta = false;
     int dangles = 2;
+    string ystruct = ""; // p(y|x)
 
     // SHAPE
     string shape_file_path = "";
@@ -628,6 +634,7 @@ int main(int argc, char** argv){
         shape_file_path = argv[16];
         fasta = atoi(argv[17]) == 1;
 	    dangles = atoi(argv[18]);
+        ystruct = argv[19]; // for p(y|x)
     }
 
     if (is_verbose) printf("beam size: %d\n", beamsize);
@@ -661,7 +668,7 @@ int main(int argc, char** argv){
         }
         if (!rna_seq.empty())
             rna_seq_list.push_back(rna_seq);
-    }else{
+    } else {
         for (string seq; getline(cin, seq);){
             if (seq.empty()) continue;
             if (seq[0] == '>' or seq[0] == ';') continue;
@@ -673,6 +680,7 @@ int main(int argc, char** argv){
         }
     }
 
+    // TODO: no need to store all seqs
     for(int i = 0; i < rna_seq_list.size(); i++){
         if (rna_name_list.size() > i)
             printf("%s\n", rna_name_list[i].c_str());
@@ -706,7 +714,13 @@ int main(int argc, char** argv){
         // lhuang: moved inside loop, fixing an obscure but crucial bug in initialization
         BeamCKYParser parser(beamsize, !sharpturn, is_verbose, bpp_file, bpp_file_index, pf_only, bpp_cutoff, forest_file, mea, MEA_gamma, MEA_file_index, MEA_bpseq, ThreshKnot, ThreshKnot_threshold, ThreshKnot_file_index, shape_file_path, fasta, dangles);
 
-        parser.parse(rna_seq);
+        double ensemble = parser.parse(rna_seq); // ensemble free energy
+
+        if (!ystruct.empty()) {
+            double energy = -eval(rna_seq, ystruct, is_verbose, dangles)/100.; // LinearFoldEval.h
+            double prob = exp(100*(energy-ensemble)/ -kT);
+            printf("x= %s\ty= %s\tDeltaG(x,y)= %.2f\t-kTlogQ(x)= %.5f\tp(y|x)= %.5f\n", rna_seq.c_str(), ystruct.c_str(), energy, ensemble, prob);
+        }
     }
 
     gettimeofday(&total_endtime, NULL);

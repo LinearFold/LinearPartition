@@ -119,7 +119,7 @@ public:
 		          int dangles=1);
 
     // DecoderResult parse(string& seq);
-    void parse(string& seq);
+    double parse(string& seq);
 
 private:
     void get_parentheses(char* result, string& seq);
