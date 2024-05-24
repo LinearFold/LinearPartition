@@ -82,6 +82,9 @@ def main():
             print("Exit!\n");
             exit();
 
+    if FLAGS.evaly:
+        use_vienna = True # eval p(y|x) only in Vienna mode
+
     path = os.path.dirname(os.path.abspath(__file__))
     cmd = ["%s/%s" % (path, ('bin/linearpartition_v' if use_vienna else 'bin/linearpartition_c')), beamsize, is_sharpturn, is_verbose, bpp_file, bpp_prefix, pf_only, bpp_cutoff, forest_file, mea, gamma, TK, threshold, ThreshKnot_prefix, MEA_prefix, MEA_bpseq, shape_file_path, is_fasta, dangles, evaly]
     subprocess.call(cmd, stdin=sys.stdin)
